@@ -8,6 +8,9 @@
               vocabularies: {},
               boxes: {},
       };
+      fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/mets`).then(resp => {
+		console.log("fetched something...")          
+      })
 //       fetch(`/goobi/plugins/mdel/process/${props.goobi_opts.processId}/dd`).then(resp => {
 //         resp.json().then(json => {
 //           this.state.dd= json;

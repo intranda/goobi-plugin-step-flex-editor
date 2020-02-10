@@ -8,8 +8,11 @@ public class Routes {
     private static Gson gson = new Gson();
 
     public static void initRoutes(Service http) {
-        http.path("/mdel", () -> {
+        http.path("/ce", () -> {
             http.get("/vocabularies", Handlers.allVocabs, gson::toJson);
+            http.get("/test", (req, res) -> {
+                return "Hallo hallo";
+            });
             http.get("/process/:processid/mets", Handlers.getMetadata, gson::toJson);
             http.post("/process/:processid/mets", Handlers.saveMets);
         });

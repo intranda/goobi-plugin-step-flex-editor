@@ -9,6 +9,7 @@ import org.goobi.production.enums.PluginType;
 import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IRestGuiPlugin;
 
+import de.intranda.goobi.plugins.codicological.Routes;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
@@ -83,7 +84,7 @@ public class CodicologicalEditor implements IRestGuiPlugin {
 
     @Override
     public void initRoutes(Service http) {
-
+        Routes.initRoutes(http);
     }
 
 }
