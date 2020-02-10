@@ -12,7 +12,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import de.intranda.goobi.plugins.CodicologicalEditor;
+import de.intranda.goobi.plugins.codicological.model.Box;
 import de.intranda.goobi.plugins.codicological.model.Column;
+import de.intranda.goobi.plugins.codicological.model.Field;
 import de.sub.goobi.config.ConfigPlugins;
 import spark.Route;
 
@@ -35,6 +37,7 @@ public class Handlers {
         colList.add(Column.fromConfig(col1Conf));
         colList.add(Column.fromConfig(col2Conf));
         colList.add(Column.fromConfig(col3Conf));
+        mergeMetadata(colList, Integer.parseInt(req.params("processid")));
         return colList;
     };
 
@@ -44,4 +47,15 @@ public class Handlers {
         //TODO: get metadata and save
         return null;
     };
+
+    private static void mergeMetadata(List<Column> colList, int parseInt) {
+        for (Column col : colList) {
+            for (Box box : col.getBoxes()) {
+                for (Field field : box.getFields()) {
+                    //TODO: look up metadata of top DS and write value(s) to field
+                }
+            }
+        }
+
+    }
 }
