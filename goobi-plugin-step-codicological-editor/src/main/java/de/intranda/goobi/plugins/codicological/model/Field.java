@@ -16,14 +16,16 @@ public class Field {
     private String name;
     private List<String> values;
     private String sourceVocabulary;
+    private boolean show;
 
     public static Field fromConfig(SubnodeConfiguration conf) {
         FieldType type = FieldType.valueOf(conf.getString("./@type"));
+        boolean show = conf.getBoolean("./@defaultDisplay", false);
         String metadatatype = conf.getString("./metadatatype");
         String name = conf.getString("./name");
         List<String> values = new ArrayList<String>();
         String sourceVocabulary = conf.getString("./sourceVocabulary");
 
-        return new Field(type, metadatatype, name, values, sourceVocabulary);
+        return new Field(type, metadatatype, name, values, sourceVocabulary, show);
     }
 }
