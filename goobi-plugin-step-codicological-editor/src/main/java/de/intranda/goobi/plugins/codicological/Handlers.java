@@ -34,7 +34,7 @@ public class Handlers {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
                     String vocabName = field.getSourceVocabulary();
-                    if (vocabName != null) {
+                    if (vocabName != null && !vocabMap.containsKey(vocabName)) {
                         Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
                         VocabularyManager.loadRecordsForVocabulary(vocab);
                         vocabMap.put(vocabName, vocab);

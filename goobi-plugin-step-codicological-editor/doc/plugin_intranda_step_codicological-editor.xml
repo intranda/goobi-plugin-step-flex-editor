@@ -4,6 +4,7 @@
             <field type="MULTISELECT" defaultDisplay="true">
                 <metadatatype>unknown</metadatatype>
                 <name>My multi select field</name>
+                <sourceVocabulary>testVocabforDropdown</sourceVocabulary>
             </field>
             <field type="INPUT">
                 <metadatatype>unknown</metadatatype>

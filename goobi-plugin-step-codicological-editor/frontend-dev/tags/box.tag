@@ -27,6 +27,9 @@
 	</div>
 
 	<style>
+		.box-title {
+			color: white;
+		}
 		.box-content-top {
 			padding: 10px;
 			background-color: #f9f9f9;

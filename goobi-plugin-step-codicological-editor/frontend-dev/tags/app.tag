@@ -25,19 +25,27 @@
     onBeforeMount(props, state) {
       this.state = {
           vocabularies: {},
+          vocabLoaded: false,
           boxes: [{},{},{}],
+          boxesLoaded: false
       };
       fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/mets`).then(resp => {
 		resp.json().then(json => {
 			this.state.boxes = json;
+			this.state.boxesLoaded = true;
 			console.log(this.state.boxes[0])
-			this.update();
+			if(this.state.vocabLoaded) {
+				this.update();
+			}
 		})
       })
       fetch(`/goobi/plugins/ce/vocabularies`).then(resp => {
 		resp.json().then(json => {
 			this.state.vocabularies = json;
-			this.update();
+			this.state.vocabLoaded = true;
+			if(this.state.boxesLoaded) {
+				this.update();
+			}
 		})
       })
     },
