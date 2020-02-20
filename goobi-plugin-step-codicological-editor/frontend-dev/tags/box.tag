@@ -37,6 +37,8 @@
 		}
 		.box-content-top .badge {
 			margin-right: 5px;
+			margin-bottom: 5px;
+			margin-top: 5px;
 		}
 		.box-content-top .badge .fa {
 			margin-right: 3px;
