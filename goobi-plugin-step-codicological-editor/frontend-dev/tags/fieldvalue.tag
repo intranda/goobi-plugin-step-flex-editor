@@ -2,9 +2,11 @@
 	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'}></input>
 	<textarea class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'}></textarea>
 	<input type="checkbox" onchange={changeValue} if={props.field.type == 'BOOLEAN'}></input>
-	<select class="form-control" onchange={changeValue} if={props.field.type == 'DROPDOWN'}>
-		<option each={record in state.vocab.records} value="{record.fields[1].value}">{record.fields[0].value}</option>
-	</select>
+	<label class="select" if={props.field.type == 'DROPDOWN'}>
+		<select class="form-control" onchange={changeValue}>
+			<option each={record in state.vocab.records} value="{record.fields[1].value}">{record.fields[0].value}</option>
+		</select>
+	</label>
 	<div class="multiselect" if={props.field.type == 'MULTISELECT'} onclick={toggleExpandMulti}>
 		<span class="form-control">
 			<span class="multiselect-label">
@@ -72,6 +74,23 @@
 		.multiselect .multiselect-values .badge {
 			margin-right: 5px;
 		}
+		.select {
+			position: relative;
+			display: block;
+		}
+		select {
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;       /* Remove default arrow */
+		}
+		.select:after {
+			font-family: FontAwesome;
+			content:"\f0d7";
+			padding: 0px 12px;
+		    position: absolute; right: 0; top: 0;
+		    color: #000;
+	     z-index: 1;
+		}
 	</style>
 	<script>
 		export default {
@@ -102,9 +121,17 @@
 		            case "MULTISELECT":
 		                break;
 		        }
-		        console.log(field)
+		        this.closeHandler = document.addEventListener('click', (e) => this.closeMulti(e))
 		    },
-		    toggleExpandMulti() {
+		    closeMulti(e) {
+		        if(this.state.multiExpanded) {
+		            e.stopPropagation();
+				    this.state.multiExpanded = false;
+				    this.update();
+		        }
+		    },
+		    toggleExpandMulti(e) {
+		      e.stopPropagation();
 		      this.state.multiExpanded = !this.state.multiExpanded; 
 		      this.update();
 		    },
