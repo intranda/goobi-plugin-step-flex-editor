@@ -3,7 +3,12 @@
 		<div class="box-title">{props.box.name}</div>
 		<div class="box-content nopadding">
 			<div class="box-content-top" if={ props.box.fields.filter( field => !field.show).length > 0}>
-				<a class="badge" each={field in props.box.fields} onclick={ () => showField(field)} if={!field.show}>
+				<div class="inner-addon right-addon" if={props.box.fields.filter( field => !field.show ).length > 7}>
+					<i class="fa fa-search"></i>
+					<input type="text" class="form-control" onkeyup={filter} placeholder="Filter">
+					</input>
+				</div>
+				<a class="badge" each={field in state.filteredFields} onclick={ () => showField(field)}>
 					<i class="fa fa-plus-circle"></i>
 					{field.name}
 				</a>
@@ -37,8 +42,7 @@
 		}
 		.box-content-top .badge {
 			margin-right: 5px;
-			margin-bottom: 5px;
-			margin-top: 5px;
+			margin-top: 10px;
 		}
 		.box-content-top .badge .fa {
 			margin-right: 3px;
@@ -67,6 +71,17 @@
 			padding: 10px;
 			flex-grow: 1;
 		}
+		.inner-addon {
+		    position: relative;
+		}
+		.inner-addon .fa {
+		    position: absolute;
+		    padding: 5px 10px 5px 5px;
+		    pointer-events: none;
+		}
+		.right-addon .fa { 
+			right: 0px;
+		}
 	</style>
 
 	<script>
@@ -76,10 +91,14 @@
 			Fieldvalue	        
 	    },
 	    onBeforeMount(state, props) {
-	        
+	        this.state = {
+	        	filteredFields: []
+	        }
 	    },
 	    onMounted(state, props) {
 	        console.log(this.props)
+	        this.state.filteredFields = this.props.box.fields;
+	        this.update();
 	    },
 	    showField(field) {
 	        field.show = true;
@@ -88,6 +107,16 @@
 	    emptyField(field) {
 	        field.show = false;
 	        field.values = [];
+	        this.update();
+	    },
+	    filter(e) {
+	        let search = e.target.value.toLowerCase();
+	        if(search == '') {
+	            this.state.filteredFields = this.props.box.fields;
+	            this.update();
+	        }
+	        this.state.filteredFields = this.props.box.fields
+	        	.filter(field => field.name.toLowerCase().indexOf(search) >= 0 && !field.show);
 	        this.update();
 	    }
 	}
