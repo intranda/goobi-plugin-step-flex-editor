@@ -69,12 +69,10 @@ public class Handlers {
     };
 
     public static Route saveMets = (req, res) -> {
-        System.out.println("trying to save METS");
         List<Column> userInput = gson.fromJson(req.body(), columnListType);
         int processId = Integer.parseInt(req.params("processid"));
         Process p = ProcessManager.getProcessById(processId);
         saveMetadata(userInput, p);
-        //TODO: get metadata and save
         return "";
     };
 
@@ -135,7 +133,7 @@ public class Handlers {
                 }
             }
         }
-
+        p.writeMetadataFile(ff);
     }
 
     private static void mergeMetadata(List<Column> colList, int processId)
