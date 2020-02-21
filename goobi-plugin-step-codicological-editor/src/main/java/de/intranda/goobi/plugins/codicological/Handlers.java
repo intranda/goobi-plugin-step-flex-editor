@@ -1,5 +1,6 @@
 package de.intranda.goobi.plugins.codicological;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.TreeMap;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.goobi.beans.Ruleset;
 import org.goobi.vocabulary.Vocabulary;
 
 import com.google.gson.Gson;
@@ -19,8 +21,20 @@ import de.intranda.goobi.plugins.codicological.model.Box;
 import de.intranda.goobi.plugins.codicological.model.Column;
 import de.intranda.goobi.plugins.codicological.model.Field;
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.helper.exceptions.DAOException;
+import de.sub.goobi.helper.exceptions.SwapException;
+import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
 import spark.Route;
+import ugh.dl.DigitalDocument;
+import ugh.dl.DocStruct;
+import ugh.dl.Fileformat;
+import ugh.dl.Metadata;
+import ugh.dl.MetadataType;
+import ugh.dl.Prefs;
+import ugh.exceptions.PreferencesException;
+import ugh.exceptions.ReadException;
+import ugh.exceptions.WriteException;
 
 public class Handlers {
     private static Gson gson = new Gson();
@@ -52,7 +66,14 @@ public class Handlers {
         return colList;
     };
 
-    public static List<Column> readColsFromConfig(XMLConfiguration conf) {
+    public static Route saveMets = (req, res) -> {
+        XMLConfiguration conf = ConfigPlugins.getPluginConfig(CodicologicalEditor.title);
+        List<Column> userInput = gson.fromJson(req.body(), columnListType);
+        //TODO: get metadata and save
+        return null;
+    };
+
+    private static List<Column> readColsFromConfig(XMLConfiguration conf) {
         conf.setExpressionEngine(new XPathExpressionEngine());
         List<Column> colList = new ArrayList<>();
         SubnodeConfiguration col1Conf = conf.configurationAt("//column[1]");
@@ -64,18 +85,41 @@ public class Handlers {
         return colList;
     }
 
-    public static Route saveMets = (req, res) -> {
-        XMLConfiguration conf = ConfigPlugins.getPluginConfig(CodicologicalEditor.title);
-        List<Column> userInput = gson.fromJson(req.body(), columnListType);
-        //TODO: get metadata and save
-        return null;
-    };
-
-    private static void mergeMetadata(List<Column> colList, int parseInt) {
+    private static void mergeMetadata(List<Column> colList, int processId)
+            throws ReadException, PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
+        org.goobi.beans.Process p = ProcessManager.getProcessById(processId);
+        if (p == null) {
+            return;
+        }
+        Ruleset ruleset = p.getRegelsatz();
+        Prefs prefs = ruleset.getPreferences();
+        Fileformat ff = p.readMetadataFile();
+        DigitalDocument dd = ff.getDigitalDocument();
+        DocStruct ds = dd.getLogicalDocStruct();
+        //we need to do this, so we don't read the metadata from the anchor
+        if (ds.getType().isAnchor()) {
+            ds = ds.getAllChildren().get(0);
+        }
         for (Column col : colList) {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
-                    //TODO: look up metadata of top DS and write value(s) to field
+                    String fieldMdt = field.getMetadatatype();
+                    if (fieldMdt == null) {
+                        continue;
+                    }
+                    //look up metadata of top DS and write value(s) to field
+                    MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
+                    if (mdt == null) {
+                        throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
+                    }
+                    @SuppressWarnings("unchecked")
+                    List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
+                    if(!metadataList.isEmpty()) {
+                        field.setShow(true);
+                    }
+                    for (Metadata md : metadataList) {
+                        field.getValues().add(md.getValue());
+                    }
                 }
             }
         }
