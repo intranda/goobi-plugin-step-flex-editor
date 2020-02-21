@@ -10,6 +10,7 @@ import java.util.TreeMap;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.goobi.beans.Process;
 import org.goobi.beans.Ruleset;
 import org.goobi.vocabulary.Vocabulary;
 
@@ -32,6 +33,7 @@ import ugh.dl.Fileformat;
 import ugh.dl.Metadata;
 import ugh.dl.MetadataType;
 import ugh.dl.Prefs;
+import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.exceptions.PreferencesException;
 import ugh.exceptions.ReadException;
 import ugh.exceptions.WriteException;
@@ -67,10 +69,13 @@ public class Handlers {
     };
 
     public static Route saveMets = (req, res) -> {
-        XMLConfiguration conf = ConfigPlugins.getPluginConfig(CodicologicalEditor.title);
+        System.out.println("trying to save METS");
         List<Column> userInput = gson.fromJson(req.body(), columnListType);
+        int processId = Integer.parseInt(req.params("processid"));
+        Process p = ProcessManager.getProcessById(processId);
+        saveMetadata(userInput, p);
         //TODO: get metadata and save
-        return null;
+        return "";
     };
 
     private static List<Column> readColsFromConfig(XMLConfiguration conf) {
@@ -85,9 +90,57 @@ public class Handlers {
         return colList;
     }
 
+    private static void saveMetadata(List<Column> userInput, Process p) throws ReadException, PreferencesException, WriteException, IOException,
+            InterruptedException, SwapException, DAOException, MetadataTypeNotAllowedException {
+        Ruleset ruleset = p.getRegelsatz();
+        Prefs prefs = ruleset.getPreferences();
+        Fileformat ff = p.readMetadataFile();
+        DigitalDocument dd = ff.getDigitalDocument();
+        DocStruct ds = dd.getLogicalDocStruct();
+        //we need to do this, so we don't read the metadata from the anchor
+        if (ds.getType().isAnchor()) {
+            ds = ds.getAllChildren().get(0);
+        }
+        for (Column col : userInput) {
+            for (Box box : col.getBoxes()) {
+                for (Field field : box.getFields()) {
+                    String fieldMdt = field.getMetadatatype();
+                    if (fieldMdt == null || "unknown".equals(fieldMdt)) {
+                        continue;
+                    }
+                    //look up metadata of top DS and write value(s) to field
+                    MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
+                    if (mdt == null) {
+                        throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
+                    }
+                    @SuppressWarnings("unchecked")
+                    List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
+                    List<String> fieldValues = field.getValues();
+                    int maxListLen = Math.max(metadataList.size(), fieldValues.size());
+                    for (int i = 0; i < maxListLen; i++) {
+                        //TODO: not sure if this works, better check...
+                        if (i >= fieldValues.size()) {
+                            ds.removeMetadata(metadataList.get(i));
+                            continue;
+                        }
+                        if (i >= metadataList.size()) {
+                            Metadata newMeta = new Metadata(mdt);
+                            newMeta.setValue(fieldValues.get(i));
+                            ds.addMetadata(newMeta);
+                            continue;
+                        }
+                        Metadata oldMeta = metadataList.get(i);
+                        oldMeta.setValue(fieldMdt);
+                    }
+                }
+            }
+        }
+
+    }
+
     private static void mergeMetadata(List<Column> colList, int processId)
             throws ReadException, PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
-        org.goobi.beans.Process p = ProcessManager.getProcessById(processId);
+        Process p = ProcessManager.getProcessById(processId);
         if (p == null) {
             return;
         }
@@ -104,7 +157,7 @@ public class Handlers {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
                     String fieldMdt = field.getMetadatatype();
-                    if (fieldMdt == null) {
+                    if (fieldMdt == null || "unknown".equals(fieldMdt)) {
                         continue;
                     }
                     //look up metadata of top DS and write value(s) to field
@@ -114,7 +167,7 @@ public class Handlers {
                     }
                     @SuppressWarnings("unchecked")
                     List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
-                    if(!metadataList.isEmpty()) {
+                    if (!metadataList.isEmpty()) {
                         field.setShow(true);
                     }
                     for (Metadata md : metadataList) {
