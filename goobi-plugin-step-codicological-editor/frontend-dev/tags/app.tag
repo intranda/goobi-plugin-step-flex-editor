@@ -18,8 +18,8 @@
 		<div class="col-md-6">
 			<button class="btn btn-primary" onclick={showPreview}>Vorschau anzeigen</button>
 			<div class="pull-right">
-				<button class="btn">Abbrechen</button>
-				<button class="btn btn-success" style="margin-left: 15px;" onclick={save}>Speichern</button>
+				<button class="btn">{msg('cancel')}</button>
+				<button class="btn btn-success" style="margin-left: 15px;" onclick={save}>{msg('save')}</button>
 			</div>
 		</div>
 	</div>
