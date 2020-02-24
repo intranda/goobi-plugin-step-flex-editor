@@ -13,7 +13,7 @@
 	<div class="row" style="margin-top: 15px;">
 		<div class="col-md-6">
 			<button class="btn btn-danger" onclick={printState}>Print state</button>
-			<button class="btn btn-primary pull-right" onclick={printState}>Digitalisate einblenden</button>
+			<button class="btn btn-primary pull-right" onclick={showImages}>Digitalisate einblenden</button>
 		</div>
 		<div class="col-md-6">
 			<button class="btn btn-primary" onclick={showPreview}>Vorschau anzeigen</button>
@@ -23,7 +23,15 @@
 			</div>
 		</div>
 	</div>
-	<Preview if={state.showPreview}" values={ state.previewVals } hide={hidePreview}/>
+	<Preview if={state.showPreview} values={ state.previewVals } hide={hidePreview}/>
+	<Imagemodal 
+		if={state.showImages} 
+		processId={props.goobi_opts.processId} 
+		images={state.images}
+		imageFolder={state.imageFolder} 
+		hide={hideImages} 
+		msg={msg}
+	/>
 	
 	<style>
 	</style>
@@ -31,18 +39,23 @@
   <script>
   import Box from './box.tag';
   import Preview from './preview.tag';
+  import Imagemodal from './imagemodal.tag';
   export default {
     components: {
       Box,
-      Preview
+      Preview,
+      Imagemodal
     },
     onBeforeMount(props, state) {
       this.state = {
+    	  msgs: {},
           vocabularies: {},
           vocabLoaded: false,
           boxes: [{},{},{}],
           boxesLoaded: false,
-          showPreview: false
+          showPreview: false,
+          imageFolder: "orig",
+          images: []
       };
       fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/mets`).then(resp => {
 		resp.json().then(json => {
@@ -51,8 +64,17 @@
 			if(this.state.vocabLoaded) {
 				this.update();
 			}
-		})
-      })
+		});
+      });
+      fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/images`).then(resp => {
+  		resp.json().then(json => {
+  			this.state.images = json.imageNames;
+  			this.state.imageFolder = json.folder;
+  			if(this.state.vocabLoaded) {
+  				this.update();
+  			}
+  		});
+      });
       fetch(`/goobi/plugins/ce/vocabularies`).then(resp => {
 		resp.json().then(json => {
 			this.state.vocabularies = json;
@@ -60,8 +82,17 @@
 			if(this.state.boxesLoaded) {
 				this.update();
 			}
-		})
-      })
+		});
+      });
+      fetch(`/goobi/api/messages/${props.goobi_opts.language}`, {
+          method: 'GET',
+          credentials: 'same-origin'
+      }).then(resp => {
+        resp.json().then(json => {
+          this.state.msgs = json;
+          this.update();
+        });
+      });
     },
     onMounted(props, state) {
     },
@@ -105,6 +136,14 @@
     },
     hidePreview() {
     	this.state.showPreview = false;
+    	this.update();
+    },
+    showImages() {
+    	this.state.showImages = true;
+    	this.update();
+    },
+    hideImages() {
+    	this.state.showImages = false;
     	this.update();
     }
   }

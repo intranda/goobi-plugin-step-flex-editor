@@ -35,11 +35,14 @@
 			padding-right: 10px;
 		}
 		.my-modal-bg .box {
-			min-width: 50vw;
-			max-height: 90vh;
+			width: 50vw;
 		}
 		.my-modal-bg .box .box-title {
 			color: white;
+		}
+		.box .box-content {
+			max-height: 90vh;
+			overflow-y: auto;
 		}
 		.my-modal-bg .box .preview-table th {
 			padding-right: 20px;			

@@ -2,6 +2,9 @@ package de.intranda.goobi.plugins.codicological;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +24,7 @@ import de.intranda.goobi.plugins.CodicologicalEditor;
 import de.intranda.goobi.plugins.codicological.model.Box;
 import de.intranda.goobi.plugins.codicological.model.Column;
 import de.intranda.goobi.plugins.codicological.model.Field;
+import de.intranda.goobi.plugins.codicological.model.ImagesResponse;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -66,6 +70,17 @@ public class Handlers {
         List<Column> colList = readColsFromConfig(conf);
         mergeMetadata(colList, Integer.parseInt(req.params("processid")));
         return colList;
+    };
+    
+    public static Route getImages = (req, res) -> {
+        int processId = Integer.parseInt(req.params("processid"));
+        Process p = ProcessManager.getProcessById(processId);
+        Path imDir = Paths.get(p.getImagesTifDirectory(false));
+        if(Files.exists(imDir)) {
+            return new ImagesResponse("media", imDir.toFile().list());
+        }
+        imDir = Paths.get(p.getImagesOrigDirectory(false));
+        return new ImagesResponse("orig", imDir.toFile().list());
     };
 
     public static Route saveMets = (req, res) -> {
