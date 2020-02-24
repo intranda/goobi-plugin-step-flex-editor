@@ -16,35 +16,38 @@
 			<button class="btn btn-primary pull-right" onclick={printState}>Digitalisate einblenden</button>
 		</div>
 		<div class="col-md-6">
-			<button class="btn btn-primary">Vorschau anzeigen</button>
+			<button class="btn btn-primary" onclick={showPreview}>Vorschau anzeigen</button>
 			<div class="pull-right">
 				<button class="btn">Abbrechen</button>
 				<button class="btn btn-success" style="margin-left: 15px;" onclick={save}>Speichern</button>
 			</div>
 		</div>
 	</div>
+	<Preview if={state.showPreview}" values={ state.previewVals } hide={hidePreview}/>
 	
 	<style>
 	</style>
   
   <script>
   import Box from './box.tag';
+  import Preview from './preview.tag';
   export default {
     components: {
-      Box  
+      Box,
+      Preview
     },
     onBeforeMount(props, state) {
       this.state = {
           vocabularies: {},
           vocabLoaded: false,
           boxes: [{},{},{}],
-          boxesLoaded: false
+          boxesLoaded: false,
+          showPreview: false
       };
       fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/mets`).then(resp => {
 		resp.json().then(json => {
 			this.state.boxes = json;
 			this.state.boxesLoaded = true;
-			console.log(this.state.boxes[1])
 			if(this.state.vocabLoaded) {
 				this.update();
 			}
@@ -61,14 +64,12 @@
       })
     },
     onMounted(props, state) {
-      console.log("mounted", state.wantedMsgs);
     },
     onBeforeUpdate(props, state) {
     },
     onUpdated(props, state) {
     },
     printState() {
-  	  console.log(this.state.boxes[2]);  
     },
     save() {
     	fetch(`/goobi/plugins/ce/process/${this.props.goobi_opts.processId}/mets`, {
@@ -84,6 +85,27 @@
         return this.state.msgs[str];
       }
       return "???" + str + "???";
+    },
+    showPreview() {
+    	this.state.showPreview = true;
+    	var previewVals = [];
+    	for(var col of this.state.boxes) {
+    		for(var box of col.boxes) {
+    			for(var field of box.fields) {
+    				if(field.show) {
+    					for(var value of field.values) {
+    						previewVals.push({name: field.name, value: value})
+    					}
+    				}
+    			}
+    		}
+    	}
+    	this.state.previewVals = previewVals;
+    	this.update();
+    },
+    hidePreview() {
+    	this.state.showPreview = false;
+    	this.update();
     }
   }
   </script>
