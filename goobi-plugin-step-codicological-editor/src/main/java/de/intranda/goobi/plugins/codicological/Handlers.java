@@ -128,7 +128,7 @@ public class Handlers {
                             continue;
                         }
                         Metadata oldMeta = metadataList.get(i);
-                        oldMeta.setValue(fieldMdt);
+                        oldMeta.setValue(fieldValues.get(i));
                     }
                 }
             }

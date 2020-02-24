@@ -44,7 +44,7 @@
 		resp.json().then(json => {
 			this.state.boxes = json;
 			this.state.boxesLoaded = true;
-			console.log(this.state.boxes[0])
+			console.log(this.state.boxes[1])
 			if(this.state.vocabLoaded) {
 				this.update();
 			}

@@ -1,6 +1,6 @@
 <fieldvalue>
 	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'}></input>
-	<textarea class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'}></textarea>
+	<textarea id="{props.field.name + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} >{props.field.values[0]}</textarea>
 	<input type="checkbox" onchange={changeValue} if={props.field.type == 'BOOLEAN'}></input>
 	<label class="select" if={props.field.type == 'DROPDOWN'}>
 		<select class="form-control" onchange={changeValue}>
@@ -104,19 +104,28 @@
 		        var field = this.props.field;
 		        if(field.sourceVocabulary) {
 		            this.state.vocab = this.props.vocabularies[field.sourceVocabulary];
-		            console.log(this.state.vocab.records);
 		            this.update();
 		        }
 		        switch(field.type) {
 		            case "BOOLEAN":
-		                field.values[0] = false;
+		            	if(field.values.length == 0) {
+		                	field.values[0] = false;
+		            	}
 		                break;
 		            case "INPUT":
 		            case "TEXTAREA":
-		                field.values[0] = "";
+		            	if(field.values.length == 0) {
+		                	field.values[0] = "";
+		            	}
+		            	var textarea = this.$('#' + this.props.field.name + '_textarea')
+		            	if(textarea) {
+		            		this.setTextAreaHeight(textarea)
+		            	}
 		                break;
 		            case "DROPDOWN":
-		                field.values[0] = this.state.vocab.records[0].fields[1].value;
+		            	if(field.values.length == 0) {
+		                	field.values[0] = this.state.vocab.records[0].fields[1].value;
+		            	}
 		                break;
 		            case "MULTISELECT":
 		                break;
@@ -159,7 +168,7 @@
 		                break;
 		            case "TEXTAREA":
 		                field.values[0] = e.target.value;
-		                this.setTextAreaHeight(e);
+		                this.setTextAreaHeight(e.target, e);
 		                break;
 		            case "DROPDOWN":
 		                for(var option of e.target.options) {
@@ -173,12 +182,11 @@
 		        }
 		        //console.log(field);
 		    },
-		    setTextAreaHeight(e) {
-		        var area = e.target;
+		    setTextAreaHeight(area, e) {
 		        if(area.offsetHeight < area.scrollHeight) {
                     area.style.height = (area.scrollHeight + 5) + "px";
                 }
-                if(e.key == "Delete" || e.key == "Backspace" || (e.key == "x" && e.ctrlKey)) {
+                if(e !== undefined && (e.key == "Delete" || e.key == "Backspace" || (e.key == "x" && e.ctrlKey))) {
                     area.style.height = 5 + "px";
                     if(area.offsetHeight < area.scrollHeight) {
 	                    area.style.height = (area.scrollHeight + 5) + "px";

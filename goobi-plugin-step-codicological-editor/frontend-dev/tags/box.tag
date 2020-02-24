@@ -96,7 +96,6 @@
 	        }
 	    },
 	    onMounted(state, props) {
-	        console.log(this.props)
 	        this.state.filteredFields = this.props.box.fields.filter(field => !field.show);
 	        this.update();
 	    },
