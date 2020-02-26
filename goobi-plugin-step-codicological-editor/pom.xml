@@ -4,7 +4,7 @@
   <artifactId>codicological-editor</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <properties>
-		<jar.name>plugin_intranda_step_metadata-editor-light</jar.name>
+		<jar.name>plugin_intranda_step_codicological-editor</jar.name>
 		<dest.folder>/opt/digiverso/goobi/plugins/step/</dest.folder>
 	</properties>
 	<repositories>

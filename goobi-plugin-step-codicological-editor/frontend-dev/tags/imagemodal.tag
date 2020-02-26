@@ -58,6 +58,9 @@
 			display: flex;
 			justify-content: center;
 		}
+		.image-container img {
+			max-height: 75vh;
+		}
 		.paginator {
 			display: flex;
 			justify-content: center;
