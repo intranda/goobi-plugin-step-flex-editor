@@ -1,6 +1,6 @@
 <fieldvalue>
 	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'}></input>
-	<textarea id="{props.field.name + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} >{props.field.values[0]}</textarea>
+	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} >{props.field.values[0]}</textarea>
 	<input type="checkbox" onchange={changeValue} if={props.field.type == 'BOOLEAN'}></input>
 	<label class="select" if={props.field.type == 'DROPDOWN'}>
 		<select class="form-control" onchange={changeValue}>
@@ -117,7 +117,7 @@
 		            	if(field.values.length == 0) {
 		                	field.values[0] = "";
 		            	}
-		            	var textarea = this.$('#' + this.props.field.name + '_textarea')
+		            	var textarea = this.$('#' + this.convertToSlug(this.props.field.name) + '_textarea')
 		            	if(textarea) {
 		            		this.setTextAreaHeight(textarea)
 		            	}
@@ -192,6 +192,11 @@
 	                    area.style.height = (area.scrollHeight + 5) + "px";
 	                }
                 }
+		    },
+		    convertToSlug(text)		    {
+		        return text.toLowerCase()
+		            .replace(/ /g,'-')
+		            .replace(/[^\w-]+/g,'');
 		    }
 		}
 	</script>
