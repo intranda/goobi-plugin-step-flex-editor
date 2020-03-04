@@ -73,6 +73,9 @@
 			line-height: 30px;
 			margin-right: 5px;
 		}
+		img {
+			border: 1px solid #ddd;
+		}
 	</style>
 	
 	<script>
