@@ -10,16 +10,16 @@
 			<Box each={box in state.boxes[2].boxes} box={box} vocabularies={state.vocabularies}></Box>
 		</div>
 	</div>  
-	<div class="row" style="margin-top: 15px;">
+	<div class="row" style="margin-top: 15px; margin-bottom: 20px;">
 		<div class="col-md-6">
-			<!-- <button class="btn btn-danger" onclick={printState}>Print state</button> -->
-			<button class="btn btn-primary pull-right" onclick={showImages}>Digitalisate einblenden</button>
+			<button class="btn" onclick={printState}>{msg('pluginLeave')}</button>
+			<button class="btn btn-primary pull-right" onclick={showImages}><i class="fa fa-image"></i>{msg('plugin_codicological_showImages')}</button>
 		</div>
 		<div class="col-md-6">
-			<button class="btn btn-primary" onclick={showPreview}>Vorschau anzeigen</button>
+			<button class="btn btn-primary" onclick={showPreview}><i class="fa fa-desktop"></i>{msg('plugin_codicological_showPreview')}</button>
 			<div class="pull-right">
-				<button class="btn">{msg('cancel')}</button>
-				<button class="btn btn-success" style="margin-left: 15px;" onclick={save}>{msg('save')}</button>
+				<button class="btn"><i class="fa fa-floppy-o"></i>{msg('save')}</button>
+				<button class="btn btn-success" style="margin-left: 15px;" onclick={save}><i class="fa fa-floppy-o"></i>{msg('plugin_codicological_saveAndExit')}</button>
 			</div>
 		</div>
 	</div>
@@ -34,6 +34,9 @@
 	/>
 	
 	<style>
+	 .btn .fa {
+	 	margin-right: 5px;
+	 }
 	</style>
   
   <script>

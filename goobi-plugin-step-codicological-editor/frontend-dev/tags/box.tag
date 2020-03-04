@@ -1,6 +1,10 @@
 <box>
-	<div class="box box-color orange box-bordered">
-		<div class="box-title">{props.box.name}</div>
+	<div class="box box-color orange box-bordered box-small">
+		<div class="box-title">
+			<h3>
+				{props.box.name}
+			</h3>
+		</div>
 		<div class="box-content nopadding">
 			<div class="box-content-top" if={ props.box.fields.filter( field => !field.show).length > 0}>
 				<div class="inner-addon right-addon" if={props.box.fields.filter( field => !field.show ).length > 7}>
@@ -8,7 +12,7 @@
 					<input type="text" class="form-control" onkeyup={filter} placeholder="Filter">
 					</input>
 				</div>
-				<a class="badge" each={field in state.filteredFields} onclick={ () => showField(field)}>
+				<a class="badge badge-intranda-light" each={field in state.filteredFields} onclick={ () => showField(field)}>
 					<i class="fa fa-plus-circle"></i>
 					{field.name}
 				</a>
@@ -35,14 +39,21 @@
 		.box-title {
 			color: white;
 		}
+		.box .box-title h3 {
+			margin-left: 10px;
+		}
 		.box-content-top {
 			padding: 10px;
-			background-color: #f9f9f9;
-			border-bottom: 1px solid #f4f4f4;
+			background-color: #f4f4f4;
+			border-bottom: 1px solid #ddd;
 		}
 		.box-content-top .badge {
 			margin-right: 5px;
-			margin-top: 10px;
+			margin-top: 5px;
+		}
+		.box-content-top .badge:hover {
+			color: white;
+			background-color: #9E9E9E;
 		}
 		.box-content-top .badge .fa {
 			margin-right: 3px;
@@ -50,22 +61,25 @@
 		.field-detail {
 			display: flex;
 			line-height: 24px;
-			border-bottom: 1px solid #f4f4f4;
+			border-bottom: 1px solid #ddd;
 		}
 		.field-detail .field-label {
 			display: flex;
 			flex-basis: 40%;
 			padding: 10px;
-			font-weight: bold;
-			background-color: #f9f9f9;
+			background-color: #f4f4f4;
+			color: #555;
 		}
 		.field-detail .field-label .label-text {
 			flex-grow: 1;
 		}
 		.field-detail .field-label .action a {
 			font-size: 16px;
-			color: black;
+			color: #777;
 			cursor: pointer;
+		}
+		.field-detail .field-label .action a:hover {
+			color: #9E9E9E;
 		}
 		.field-detail .value {
 			padding: 10px;
@@ -73,6 +87,7 @@
 		}
 		.inner-addon {
 		    position: relative;
+		    margin-bottom: 10px;
 		}
 		.inner-addon .fa {
 		    position: absolute;
