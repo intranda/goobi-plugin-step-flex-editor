@@ -12,7 +12,7 @@
 	</div>  
 	<div class="row" style="margin-top: 15px;">
 		<div class="col-md-6">
-			<button class="btn btn-danger" onclick={printState}>Print state</button>
+			<!-- <button class="btn btn-danger" onclick={printState}>Print state</button> -->
 			<button class="btn btn-primary pull-right" onclick={showImages}>Digitalisate einblenden</button>
 		</div>
 		<div class="col-md-6">
