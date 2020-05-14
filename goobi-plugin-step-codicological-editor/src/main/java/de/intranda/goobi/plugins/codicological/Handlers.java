@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -71,16 +72,20 @@ public class Handlers {
         mergeMetadata(colList, Integer.parseInt(req.params("processid")));
         return colList;
     };
-    
+
     public static Route getImages = (req, res) -> {
         int processId = Integer.parseInt(req.params("processid"));
         Process p = ProcessManager.getProcessById(processId);
         Path imDir = Paths.get(p.getImagesTifDirectory(false));
-        if(Files.exists(imDir)) {
-            return new ImagesResponse("media", imDir.toFile().list());
+        if (Files.exists(imDir)) {
+            String[] files = imDir.toFile().list();
+            Arrays.sort(files);
+            return new ImagesResponse("media", files);
         }
         imDir = Paths.get(p.getImagesOrigDirectory(false));
-        return new ImagesResponse("orig", imDir.toFile().list());
+        String[] files = imDir.toFile().list();
+        Arrays.sort(files);
+        return new ImagesResponse("orig", files);
     };
 
     public static Route saveMets = (req, res) -> {
