@@ -4,7 +4,7 @@
 	<input type="checkbox" onchange={changeValue} if={props.field.type == 'BOOLEAN'}></input>
 	<label class="select" if={props.field.type == 'DROPDOWN'}>
 		<select class="form-control" onchange={changeValue}>
-			<option each={record in state.vocab.records} value="{record.fields[1].value}">{record.fields[0].value}</option>
+			<option each={record in state.vocab.records} value="{record.fields[0].value}">{record.fields[0].value}</option>
 		</select>
 	</label>
 	<div class="multiselect" if={props.field.type == 'MULTISELECT'} onclick={toggleExpandMulti}>
