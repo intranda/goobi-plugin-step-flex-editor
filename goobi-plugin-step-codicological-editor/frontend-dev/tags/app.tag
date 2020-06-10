@@ -81,6 +81,7 @@
       fetch(`/goobi/plugins/ce/vocabularies`).then(resp => {
 		resp.json().then(json => {
 			this.state.vocabularies = json;
+			console.log(this.state.vocabularies)
 			this.state.vocabLoaded = true;
 			if(this.state.boxesLoaded) {
 				this.update();

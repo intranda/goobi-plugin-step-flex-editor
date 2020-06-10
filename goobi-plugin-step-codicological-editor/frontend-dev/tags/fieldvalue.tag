@@ -4,7 +4,7 @@
 	<input type="checkbox" onchange={changeValue} if={props.field.type == 'BOOLEAN'}></input>
 	<label class="select" if={props.field.type == 'DROPDOWN'}>
 		<select class="form-control" onchange={changeValue}>
-			<option each={record in state.vocab.records} value="{record.fields[0].value}">{record.fields[0].value}</option>
+			<option each={record in state.vocab.records} value="{record.fields[state.vocabFieldIdx].value}">{record.fields[state.vocabFieldIdx].value}</option>
 		</select>
 	</label>
 	<div class="multiselect" if={props.field.type == 'MULTISELECT'} onclick={toggleExpandMulti}>
@@ -20,8 +20,8 @@
 		<div class="multiselect-options" if={state.multiExpanded}>
 			<ul>
 				<li each={record in state.vocab.records} onclick={ (e) => toggleEntry(e, record) }>
-					<input type="checkbox" checked={props.field.values.indexOf(record.fields[1].value) >= 0}>
-					{record.fields[0].value}
+					<input type="checkbox" checked={props.field.values.indexOf(record.fields[state.vocabFieldIdx].value) >= 0}>
+					{record.fields[state.vocabFieldIdx].value}
 				</li>
 			</ul>
 		</div>
@@ -97,6 +97,7 @@
 		    onBeforeMount() {
 		        this.state = {
 		            vocab: {},
+		            vocabFieldIdx: -1,
 		            multiExpanded: false
 		        };
 		    },
@@ -104,6 +105,7 @@
 		        var field = this.props.field;
 		        if(field.sourceVocabulary) {
 		            this.state.vocab = this.props.vocabularies[field.sourceVocabulary];
+		            this.state.vocabFieldIdx = this.state.vocab.struct.findIndex(f => f.mainEntry);
 		            this.update();
 		        }
 		        switch(field.type) {
