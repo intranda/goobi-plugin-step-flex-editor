@@ -12,14 +12,14 @@
 	</div>  
 	<div class="row" style="margin-top: 15px; margin-bottom: 20px;">
 		<div class="col-md-6">
-			<button class="btn" onclick={printState}>{msg('pluginLeave')}</button>
+			<button class="btn" onclick={leavePlugin}>{msg('pluginLeave')}</button>
 			<button class="btn btn-primary pull-right" onclick={showImages}><i class="fa fa-image"></i>{msg('plugin_codicological_showImages')}</button>
 		</div>
 		<div class="col-md-6">
 			<button class="btn btn-primary" onclick={showPreview}><i class="fa fa-desktop"></i>{msg('plugin_codicological_showPreview')}</button>
 			<div class="pull-right">
-				<button class="btn"><i class="fa fa-floppy-o"></i>{msg('save')}</button>
-				<button class="btn btn-success" style="margin-left: 15px;" onclick={save}><i class="fa fa-floppy-o"></i>{msg('plugin_codicological_saveAndExit')}</button>
+				<button class="btn" onclick={save}><i class="fa fa-floppy-o"></i>{msg('save')}</button>
+				<button class="btn btn-success" style="margin-left: 15px;" onclick={saveAndExit}><i class="fa fa-floppy-o"></i>{msg('plugin_codicological_saveAndExit')}</button>
 			</div>
 		</div>
 	</div>
@@ -110,6 +110,18 @@
     	fetch(`/goobi/plugins/ce/process/${this.props.goobi_opts.processId}/mets`, {
     		method: "POST",
     		body: JSON.stringify(this.state.boxes)
+    	}).catch(err => {
+    		alert("There was an error saving your data");
+    	})
+    },
+    saveAndExit() {
+    	fetch(`/goobi/plugins/ce/process/${this.props.goobi_opts.processId}/mets`, {
+    		method: "POST",
+    		body: JSON.stringify(this.state.boxes)
+    	}).then( r => {
+    		this.leavePlugin();
+    	}).catch(err => {
+    		alert("There was an error saving your data");
     	})
     },
     msg(str) {
@@ -149,6 +161,9 @@
     hideImages() {
     	this.state.showImages = false;
     	this.update();
+    },
+    leavePlugin() {
+    	document.querySelector('#restPluginFinishLink').click();
     }
   }
   </script>
