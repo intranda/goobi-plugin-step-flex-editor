@@ -107,32 +107,33 @@
 	    },
 	    onBeforeMount(state, props) {
 	        this.state = {
-	        	filteredFields: []
+	        	filteredFields: [],
+	        	search: ''
 	        }
 	    },
 	    onMounted(state, props) {
-	        this.state.filteredFields = this.props.box.fields.filter(field => !field.show);
-	        this.update();
+	        this.filterFields();
 	    },
 	    showField(field) {
 	        field.show = true;
-	        this.state.filteredFields = this.props.box.fields.filter(field => !field.show);
-	        this.update();
+	        this.filterFields();
 	    },
 	    emptyField(field) {
 	        field.show = false;
 	        field.values = [];
-	        this.state.filteredFields = this.props.box.fields.filter(field => !field.show);
-	        this.update();
+	        this.filterFields();
 	    },
 	    filter(e) {
-	        let search = e.target.value.toLowerCase();
-	        if(search == '') {
-	            this.state.filteredFields = this.props.box.fields;
+	        this.state.search = e.target.value.toLowerCase();
+	        this.filterFields();
+	    },
+	    filterFields() {
+	    	if(this.state.search == '') {
+	            this.state.filteredFields = this.props.box.fields.filter(field => !field.show);
 	            this.update();
 	        }
 	        this.state.filteredFields = this.props.box.fields
-	        	.filter(field => field.name.toLowerCase().indexOf(search) >= 0 && !field.show);
+	        	.filter(field => field.name.toLowerCase().indexOf(this.state.search) >= 0 && !field.show);
 	        this.update();
 	    }
 	}
