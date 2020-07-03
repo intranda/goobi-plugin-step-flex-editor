@@ -1,35 +1,37 @@
 <fieldvalue>
-	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'}></input>
-	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} >{props.field.values[0]}</textarea>
-	<input type="checkbox" onchange={changeValue} if={props.field.type == 'BOOLEAN'}></input>
-	<label class="select" if={props.field.type == 'DROPDOWN'}>
-		<select class="form-control" onchange={changeValue}>
-			<option each={record in state.vocab.records} value="{record.fields[state.vocabFieldIdx].value}">{record.fields[state.vocabFieldIdx].value}</option>
-		</select>
-	</label>
-	<div class="multiselect" if={props.field.type == 'MULTISELECT'} onclick={toggleExpandMulti}>
-		<span class="form-control">
-			<span class="multiselect-label">
-				{props.field.name} - auswählen
-			</span>
-			<span class="multiselect-icon">
-				<i class="fa fa-caret-down" if={!state.multiExpanded}></i>
-				<i class="fa fa-caret-up" if={state.multiExpanded}></i>
-			</span>
-		</span>
-		<div class="multiselect-options" if={state.multiExpanded}>
-			<ul>
-				<li each={record in state.vocab.records} onclick={ (e) => toggleEntry(e, record) }>
-					<input type="checkbox" checked={props.field.values.indexOf(record.fields[state.vocabFieldIdx].value) >= 0}>
-					{record.fields[state.vocabFieldIdx].value}
-				</li>
-			</ul>
-		</div>
-		<div class="multiselect-values">
-			<span class="badge" each={value in props.field.values}>{value}</span>
-		</div>
-	</div>
-	
+    <span class="text-danger error" if={state.vocabError}>{state.vocabError}</template>
+    <template if={!state.vocabError}>
+    	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'}></input>
+    	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} >{props.field.values[0]}</textarea>
+    	<input type="checkbox" onchange={changeValue} if={props.field.type == 'BOOLEAN'}></input>
+    	<label class="select" if={props.field.type == 'DROPDOWN'}>
+    		<select class="form-control" onchange={changeValue}>
+    			<option each={record in state.vocab.records} value="{record.fields[state.vocabFieldIdx].value}">{record.fields[state.vocabFieldIdx].value}</option>
+    		</select>
+    	</label>
+    	<div class="multiselect" if={props.field.type == 'MULTISELECT'} onclick={toggleExpandMulti}>
+    		<span class="form-control">
+    			<span class="multiselect-label">
+    				{props.field.name} - auswählen
+    			</span>
+    			<span class="multiselect-icon">
+    				<i class="fa fa-caret-down" if={!state.multiExpanded}></i>
+    				<i class="fa fa-caret-up" if={state.multiExpanded}></i>
+    			</span>
+    		</span>
+    		<div class="multiselect-options" if={state.multiExpanded}>
+    			<ul>
+    				<li each={record in state.vocab.records} onclick={ (e) => toggleEntry(e, record) }>
+    					<input type="checkbox" checked={props.field.values.indexOf(record.fields[state.vocabFieldIdx].value) >= 0}>
+    					{record.fields[state.vocabFieldIdx].value}
+    				</li>
+    			</ul>
+    		</div>
+    		<div class="multiselect-values">
+    			<span class="badge" each={value in props.field.values}>{value}</span>
+    		</div>
+    	</div>
+	</template>
 	
 	<style>
 		.multiselect {
@@ -91,6 +93,9 @@
 		    color: #000;
 	     z-index: 1;
 		}
+        .error {
+            padding: 2px;
+        }
 	</style>
 	<script>
 		export default {
@@ -104,7 +109,12 @@
 		    onMounted() {
 		        var field = this.props.field;
 		        if(field.sourceVocabulary) {
-		            this.state.vocab = this.props.vocabularies[field.sourceVocabulary];
+		            this.state.vocab = this.props.vocabularies[field.sourceVocabulary] || {stub: true, struct: [], records: [{fields:[]}]};
+		            if(this.state.vocab.stub) {
+		            	this.state.vocabError = `Vocabulary "${field.sourceVocabulary}" was not found`;
+		            	this.update();
+		            	return;
+		            }
 		            this.state.vocabFieldIdx = this.state.vocab.struct.findIndex(f => f.mainEntry);
 		            this.update();
 		        }
