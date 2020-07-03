@@ -22,7 +22,7 @@ pipeline {
 
     stage('build') {
       steps {
-        sh 'mvn -f goobi-plugin-step-codicological-editor/pom.xml install'
+        sh 'mvn -f goobi-plugin-step-codicological-editor/pom.xml package'
         recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
       }
     }
@@ -30,7 +30,7 @@ pipeline {
   
   post {
     success {
-      archiveArtifacts artifacts: '**/target/*.jar, */plugin_*.xml, plugin_*.xml', fingerprint: true, onlyIfSuccessful: true
+      archiveArtifacts artifacts: '**/target/*.tar, */plugin_*.xml, plugin_*.xml', fingerprint: true, onlyIfSuccessful: true
     }
     changed {
       emailext(
