@@ -41,6 +41,7 @@
 			bottom: 0px;
 			left: 0px;
 			background-color: rgba(255, 255, 255, 0.5);
+            z-index: 9999;
 		}
 		.icon-only-button {
 			background: none;
@@ -53,6 +54,7 @@
 		}
 		.my-modal-bg .box .box-title {
 			color: white;
+            font-size: 16px;
 		}
 		.image-container {
 			display: flex;
@@ -76,6 +78,9 @@
 		img {
 			border: 1px solid #ddd;
 		}
+        .fa-angle-right {
+            margin-left: 5px;
+        }
 	</style>
 	
 	<script>

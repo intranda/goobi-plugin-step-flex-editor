@@ -6,7 +6,7 @@
 				<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
 			</div>
 			<div class="box-content">
-				<table class="preview-table">
+				<table class="table">
 				<tbody>
 					<tr each={ item in state.values}>
 						<th>{item.name}</th>
@@ -28,6 +28,7 @@
 			bottom: 0px;
 			left: 0px;
 			background-color: rgba(255, 255, 255, 0.5);
+            z-index: 9999;
 		}
 		.icon-only-button {
 			background: none;
@@ -39,18 +40,17 @@
 		}
 		.my-modal-bg .box .box-title {
 			color: white;
+            font-size: 16px;
 		}
 		.box .box-content {
 			max-height: 90vh;
 			overflow-y: auto;
+            padding: 0;
 		}
-		.my-modal-bg .box .preview-table th {
-			padding-right: 20px;			
-			font-weight: bold;
-		}
-		.my-modal-bg .box .preview-table th,td {
-		    padding-bottom: 15px;
-		  }
+		.table th {
+            font-weight: normal;
+            width: 33%;
+        }
 	</style>
 	<script>
 		export default {

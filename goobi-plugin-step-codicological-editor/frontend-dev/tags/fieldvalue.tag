@@ -101,6 +101,9 @@
         .error {
             padding: 2px;
         }
+        textarea {
+            resize: vertical;
+        }
 	</style>
 	<script>
 		export default {
@@ -141,7 +144,7 @@
 		                break;
 		            case "DROPDOWN":
 		            	if(field.values.length == 0) {
-		                	field.values[0] = this.state.vocab.records[0].fields[1].value;
+		                	field.values[0] = this.state.vocab.records[0].fields[this.state.vocabFieldIdx].value;
 		            	}
 		                break;
 		            case "MULTISELECT":
@@ -164,7 +167,7 @@
 		    toggleEntry(e, record) {
 		        e.stopPropagation();
 		      	var field = this.props.field;
-		      	var recordValue = record.fields[1].value;
+		      	var recordValue = record.fields[this.state.vocabFieldIdx].value;
 		      	var idx = field.values.indexOf(recordValue);
 		      	if(idx < 0) {
 		      	    field.values.push(recordValue)

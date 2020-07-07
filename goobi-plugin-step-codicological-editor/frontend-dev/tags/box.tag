@@ -84,6 +84,7 @@
 		.field-detail .value {
 			padding: 10px;
 			flex-grow: 1;
+            max-width: 60%;
 		}
 		.inner-addon {
 		    position: relative;
