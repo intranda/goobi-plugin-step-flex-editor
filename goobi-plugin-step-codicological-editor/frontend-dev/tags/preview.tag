@@ -58,6 +58,9 @@
             font-weight: normal;
             width: 33%;
         }
+        .table > tbody > tr > td {
+            padding: 8px;
+        }
         ul {
             padding: 0;
             list-style-type: none;
