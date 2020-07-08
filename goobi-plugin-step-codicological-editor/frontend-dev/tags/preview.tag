@@ -11,9 +11,12 @@
 					<tr each={ item in state.values}>
 						<th>{item.name}</th>
 						<td>
-                            <p each={value in item.values}>
-                                {value}
-                            </p>
+                            <template if={item.values.length == 1}>{item.values[0]}</template>
+                            <ul if={item.values.length != 1}>
+                                <li each={value in item.values}>
+                                    {value}
+                                </li>
+                            </ul>
                         </td>
 					</tr>
 					</tbody>
@@ -54,6 +57,11 @@
 		.table th {
             font-weight: normal;
             width: 33%;
+        }
+        ul {
+            padding: 0;
+            list-style-type: none;
+            margin: 0;
         }
 	</style>
 	<script>
