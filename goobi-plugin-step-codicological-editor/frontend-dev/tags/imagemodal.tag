@@ -73,7 +73,8 @@
 		}
 		.paginator .current-page {
 			line-height: 30px;
-			margin-right: 5px;
+			margin-right: 20px;
+            margin-left: 15px;
 		}
 		img {
 			border: 1px solid #ddd;

@@ -140,9 +140,7 @@
     		for(var box of col.boxes) {
     			for(var field of box.fields) {
     				if(field.show) {
-    					for(var value of field.values) {
-    						previewVals.push({name: field.name, value: value})
-    					}
+						previewVals.push(field)
     				}
     			}
     		}

@@ -10,7 +10,11 @@
 				<tbody>
 					<tr each={ item in state.values}>
 						<th>{item.name}</th>
-						<td>{item.value}</td>
+						<td>
+                            <p each={value in item.values}>
+                                {value}
+                            </p>
+                        </td>
 					</tr>
 					</tbody>
 				</table>

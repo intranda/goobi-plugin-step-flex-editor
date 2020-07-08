@@ -3,7 +3,7 @@
     <template if={!state.vocabError}>
     	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'} value={props.field.values[0]}></input>
     	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} >{props.field.values[0]}</textarea>
-    	<input type="checkbox" onchange={changeValue} if={props.field.type == 'BOOLEAN'}></input>
+    	<input type="checkbox" onchange={changeValue} checked={props.field.values[0].toLowerCase() == "true"} if={props.field.type == 'BOOLEAN'}></input>
     	<label class="select" if={props.field.type == 'DROPDOWN'}>
     		<select class="form-control" onchange={changeValue}>
     			<option 
