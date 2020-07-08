@@ -3,7 +3,7 @@ package de.intranda.goobi.plugins.codicological.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.configuration.SubnodeConfiguration;
+import org.apache.commons.configuration.HierarchicalConfiguration;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +18,7 @@ public class Field {
     private String sourceVocabulary;
     private boolean show;
 
-    public static Field fromConfig(SubnodeConfiguration conf) {
+    public static Field fromConfig(HierarchicalConfiguration conf) {
         FieldType type = FieldType.valueOf(conf.getString("./@type"));
         boolean show = conf.getBoolean("./@defaultDisplay", false);
         String metadatatype = conf.getString("./metadatatype");
