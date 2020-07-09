@@ -3,7 +3,7 @@ package de.intranda.goobi.plugins.codicological.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.configuration.SubnodeConfiguration;
+import org.apache.commons.configuration.HierarchicalConfiguration;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,10 +13,10 @@ import lombok.Data;
 public class Column {
     private List<Box> boxes;
 
-    public static Column fromConfig(SubnodeConfiguration conf) {
+    public static Column fromConfig(HierarchicalConfiguration conf) {
         Column col = new Column(new ArrayList<>());
-        List<SubnodeConfiguration> boxConfs = conf.configurationsAt("./box");
-        for (SubnodeConfiguration subConf : boxConfs) {
+        List<HierarchicalConfiguration> boxConfs = conf.configurationsAt("./box");
+        for (HierarchicalConfiguration subConf : boxConfs) {
             col.addBox(Box.fromConfig(subConf));
         }
         return col;
