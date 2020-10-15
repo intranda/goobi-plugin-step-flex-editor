@@ -36,6 +36,9 @@
     			<span class="badge" each={value in props.field.values}>{value}</span>
     		</div>
     	</div>
+        <div class="multivalue" if={props.field.repeatable}>
+            MULTIPLE VALUES HERE IF ANY
+        </div>
 	</template>
 	
 	<style>

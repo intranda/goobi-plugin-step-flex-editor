@@ -5,5 +5,6 @@ public enum FieldType {
     TEXTAREA,
     BOOLEAN,
     DROPDOWN,
-    MULTISELECT
+    MULTISELECT,
+    MODAL_PROVENANCE
 }

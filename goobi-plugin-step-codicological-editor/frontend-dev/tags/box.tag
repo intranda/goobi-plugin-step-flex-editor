@@ -6,7 +6,7 @@
 			</h3>
 		</div>
 		<div class="box-content nopadding">
-			<div class="box-content-top" if={ props.box.fields.filter( field => !field.show).length > 0}>
+			<div class="box-content-top" if={ state.filteredFields.length > 0}>
 				<div class="inner-addon right-addon" if={props.box.fields.filter( field => !field.show ).length > 7}>
 					<i class="fa fa-search"></i>
 					<input type="text" class="form-control" onkeyup={filter} placeholder="Filter">
@@ -17,7 +17,7 @@
 					{field.name}
 				</a>
 			</div>
-			<div class="field-detail" each={field in props.box.fields} if={field.show}>
+			<div class="field-detail" each={field in props.box.fields} if={field.show && (!field.repeatable || field.values.length > 0)}>
 				<div class="field-label">
 					<div class="label-text">
 						{field.name}
@@ -34,6 +34,11 @@
 			</div>
 		</div>
 	</div>
+    <Provenancemodal 
+        if={state.showProvenanceModal} 
+        hide={hideProvenanceModal}
+        field={state.provenanceField} 
+        vocabularies={props.vocabularies} />
 
 	<style>
 		.box-title {
@@ -102,21 +107,34 @@
 
 	<script>
 	import Fieldvalue from './fieldvalue.tag';
+	import Provenancemodal from './provenancemodal.tag';
 	export default {
 	    components: {
-			Fieldvalue	        
+			Fieldvalue,
+			Provenancemodal
 	    },
 	    onBeforeMount(state, props) {
 	        this.state = {
 	        	filteredFields: [],
-	        	search: ''
+	        	search: '',
+	        	showProvenanceModal: false
 	        }
 	    },
 	    onMounted(state, props) {
 	        this.filterFields();
 	    },
+	    hideProvenanceModal() {
+	    	this.state.showProvenanceModal = false
+	    	this.update();
+	    },
 	    showField(field) {
 	        field.show = true;
+	        if(field.repeatable) {
+	        	this.state.showProvenanceModal = true;
+	        }
+	        if(field.type = "MODAL_PROVENANCE") {
+	        	this.state.provenanceField = field;
+	        }
 	        this.filterFields();
 	    },
 	    emptyField(field) {
@@ -130,9 +148,10 @@
 	    },
 	    filterFields() {
 	    	if(this.state.search == '') {
-	            this.state.filteredFields = this.props.box.fields.filter(field => !field.show);
-	            this.update();
-	        }
+	            this.state.filteredFields = this.props.box.fields.filter(field => !field.show || field.repeatable);
+	            this.update()
+	            return;
+	        } 
 	        this.state.filteredFields = this.props.box.fields
 	        	.filter(field => field.name.toLowerCase().indexOf(this.state.search) >= 0 && !field.show);
 	        this.update();
