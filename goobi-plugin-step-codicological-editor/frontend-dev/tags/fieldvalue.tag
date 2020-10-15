@@ -116,10 +116,10 @@
 		    },
 		    onMounted() {
 		        var field = this.props.field;
-		        if(field.sourceVocabulary) {
-		            this.state.vocab = this.props.vocabularies[field.sourceVocabulary] || {stub: true, struct: [], records: [{fields:[]}]};
+		        if(field.sourceVocabularies && field.sourceVocabularies.length == 1) {
+		            this.state.vocab = this.props.vocabularies[field.sourceVocabularies] || {stub: true, struct: [], records: [{fields:[]}]};
 		            if(this.state.vocab.stub) {
-		            	this.state.vocabError = `Vocabulary "${field.sourceVocabulary}" was not found`;
+		            	this.state.vocabError = `Vocabulary "${field.sourceVocabularies}" was not found`;
 		            	this.update();
 		            	return;
 		            }

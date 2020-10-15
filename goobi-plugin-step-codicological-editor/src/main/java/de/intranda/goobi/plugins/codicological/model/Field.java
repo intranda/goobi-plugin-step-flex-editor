@@ -1,6 +1,7 @@
 package de.intranda.goobi.plugins.codicological.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
@@ -15,7 +16,7 @@ public class Field {
     private String metadatatype;
     private String name;
     private List<String> values;
-    private String sourceVocabulary;
+    private List<String> sourceVocabularies;
     private boolean show;
 
     public static Field fromConfig(HierarchicalConfiguration conf) {
@@ -24,7 +25,7 @@ public class Field {
         String metadatatype = conf.getString("./metadatatype");
         String name = conf.getString("./name");
         List<String> values = new ArrayList<String>();
-        String sourceVocabulary = conf.getString("./sourceVocabulary");
+        List<String> sourceVocabulary = Arrays.asList(conf.getStringArray("./sourceVocabulary"));
 
         return new Field(type, metadatatype, name, values, sourceVocabulary, show);
     }

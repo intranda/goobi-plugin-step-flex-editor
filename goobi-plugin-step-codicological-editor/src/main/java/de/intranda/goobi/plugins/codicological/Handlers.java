@@ -54,11 +54,12 @@ public class Handlers {
         for (Column col : colList) {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
-                    String vocabName = field.getSourceVocabulary();
-                    if (vocabName != null && !vocabMap.containsKey(vocabName)) {
-                        Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
-                        VocabularyManager.loadRecordsForVocabulary(vocab);
-                        vocabMap.put(vocabName, vocab);
+                    for (String vocabName : field.getSourceVocabularies()) {
+                        if (vocabName != null && !vocabMap.containsKey(vocabName)) {
+                            Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
+                            VocabularyManager.getAllRecords(vocab);
+                            vocabMap.put(vocabName, vocab);
+                        }
                     }
                 }
             }
