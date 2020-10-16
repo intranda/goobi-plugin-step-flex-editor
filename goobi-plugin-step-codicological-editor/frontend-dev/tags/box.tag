@@ -38,7 +38,8 @@
         if={state.showProvenanceModal} 
         hide={hideProvenanceModal}
         field={state.provenanceField} 
-        vocabularies={props.vocabularies} />
+        vocabularies={props.vocabularies}
+        valuesChanged={valuesChanged} />
 
 	<style>
 		.box-title {
@@ -155,6 +156,9 @@
 	        this.state.filteredFields = this.props.box.fields
 	        	.filter(field => field.name.toLowerCase().indexOf(this.state.search) >= 0 && !field.show);
 	        this.update();
+	    },
+	    valuesChanged() {
+	    	this.update();
 	    }
 	}
 		

@@ -13,13 +13,13 @@
 	<div class="row" style="margin-top: 15px; margin-bottom: 20px;">
 		<div class="col-md-6">
 			<button class="btn" onclick={leavePlugin}>{msg('pluginLeave')}</button>
-			<button class="btn btn-primary pull-right" onclick={showImages}><i class="fa fa-image"></i>{msg('plugin_codicological_showImages')}</button>
+			<button class="btn btn-primary pull-right" onclick={showImages}><i class="fa-btn fa fa-image"></i>{msg('plugin_codicological_showImages')}</button>
 		</div>
 		<div class="col-md-6">
-			<button class="btn btn-primary" onclick={showPreview}><i class="fa fa-desktop"></i>{msg('plugin_codicological_showPreview')}</button>
+			<button class="btn btn-primary" onclick={showPreview}><i class="fa-btn fa fa-desktop"></i>{msg('plugin_codicological_showPreview')}</button>
 			<div class="pull-right">
 				<button class="btn" onclick={save}><i class="fa fa-floppy-o"></i>{msg('save')}</button>
-				<button class="btn btn-success" style="margin-left: 15px;" onclick={saveAndExit}><i class="fa fa-floppy-o"></i>{msg('plugin_codicological_saveAndExit')}</button>
+				<button class="btn btn-success" style="margin-left: 15px;" onclick={saveAndExit}><i class="fa-btn fa fa-floppy-o"></i>{msg('plugin_codicological_saveAndExit')}</button>
 			</div>
 		</div>
 	</div>
@@ -34,7 +34,7 @@
 	/>
 	
 	<style>
-	 .btn .fa {
+	 .btn .fa-btn {
 	 	margin-right: 5px;
 	 }
 	</style>

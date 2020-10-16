@@ -23,7 +23,8 @@
                     <tr each={person in state.filteredPersons}>
                         <td>{person.fields[0].value}</td>
                         <td>{person.fields[1].value}</td>
-<!--                         <td>{person.fields[2].value}</td> -->
+                        <td></td>
+                        <td><button class="btn btn-primary" onclick={() => addPerson(person)}><i class="fa fa-plus"></i></button></td>
                     </tr>
                 </tbody>
             </table>
@@ -134,6 +135,11 @@ export default {
 					return institution.fields.map(f => f.value.toLowerCase()).join(" ").indexOf(term) >= 0;
 				})
 				this.update();
+			},
+			addPerson(person) {
+				console.log("should be person:", person);
+				this.props.field.values.push(person);
+				this.props.valuesChanged();
 			}
 		}
 
