@@ -15,7 +15,7 @@ public class Field {
     private FieldType type;
     private String metadatatype;
     private String name;
-    private List<String> values;
+    private List<FieldValue> values;
     private List<String> sourceVocabularies;
     private boolean show;
     private boolean repeatable;
@@ -26,7 +26,7 @@ public class Field {
         boolean repeatable = conf.getBoolean("./@repeatable", false);
         String metadatatype = conf.getString("./metadatatype");
         String name = conf.getString("./name");
-        List<String> values = new ArrayList<String>();
+        List<FieldValue> values = new ArrayList<FieldValue>();
         List<String> sourceVocabulary = Arrays.asList(conf.getStringArray("./sourceVocabulary"));
 
         return new Field(type, metadatatype, name, values, sourceVocabulary, show, repeatable);

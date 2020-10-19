@@ -1,15 +1,15 @@
 <fieldvalue>
     <span class="text-danger error" if={state.vocabError}>{state.vocabError}</template>
-    <template if={!state.vocabError}>
-    	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'} value={props.field.values[0]}></input>
-    	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} >{props.field.values[0]}</textarea>
+    <template if={!state.vocabError && fieldPrepared()}>
+    	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'} value={props.field.values[0].value}></input>
+    	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} >{props.field.values[0].value}</textarea>
     	<input type="checkbox" onchange={changeValue} checked={checkBoxChecked(props.field.values)} if={props.field.type == 'BOOLEAN'}></input>
     	<label class="select" if={props.field.type == 'DROPDOWN'}>
     		<select class="form-control" onchange={changeValue}>
     			<option 
                     each={record in state.vocab.records} 
                     value="{record.fields[state.vocabFieldIdx].value}" 
-                    selected={record.fields[state.vocabFieldIdx].value == props.field.values[0]}>
+                    selected={record.fields[state.vocabFieldIdx].value == props.field.values[0].value}>
                     {record.fields[state.vocabFieldIdx].value}
                 </option>
     		</select>
@@ -27,18 +27,15 @@
     		<div class="multiselect-options" if={state.multiExpanded}>
     			<ul>
     				<li each={record in state.vocab.records} onclick={ (e) => toggleEntry(e, record) }>
-    					<input type="checkbox" checked={props.field.values.indexOf(record.fields[state.vocabFieldIdx].value) >= 0}>
+    					<input type="checkbox" checked={props.field.values.filter(val => val.value == record.fields[state.vocabFieldIdx].value).length > 0}>
     					{record.fields[state.vocabFieldIdx].value}
     				</li>
     			</ul>
     		</div>
     		<div class="multiselect-values">
-    			<span class="badge" each={value in props.field.values}>{value}</span>
+    			<span class="badge" each={value in props.field.values}>{value.value}</span>
     		</div>
     	</div>
-        <div class="multivalue" if={props.field.repeatable}>
-            MULTIPLE VALUES HERE IF ANY
-        </div>
 	</template>
 	
 	<style>
@@ -116,9 +113,10 @@
 		            vocabFieldIdx: -1,
 		            multiExpanded: false
 		        };
+		        //this.fillField();
 		    },
 		    onMounted() {
-		        var field = this.props.field;
+		    	var field = this.props.field;
 		        if(field.sourceVocabularies && field.sourceVocabularies.length == 1) {
 		            this.state.vocab = this.props.vocabularies[field.sourceVocabularies] || {stub: true, struct: [], records: [{fields:[]}]};
 		            if(this.state.vocab.stub) {
@@ -132,13 +130,13 @@
 		        switch(field.type) {
 		            case "BOOLEAN":
 		            	if(field.values.length == 0) {
-		                	field.values[0] = false;
+		                	field.values[0] = {value: false};
 		            	}
 		                break;
 		            case "INPUT":
 		            case "TEXTAREA":
 		            	if(field.values.length == 0) {
-		                	field.values[0] = "";
+		                	field.values[0] = {value: ""};
 		            	}
 		            	var textarea = this.$('#' + this.convertToSlug(this.props.field.name) + '_textarea')
 		            	if(textarea) {
@@ -147,13 +145,17 @@
 		                break;
 		            case "DROPDOWN":
 		            	if(field.values.length == 0) {
-		                	field.values[0] = this.state.vocab.records[0].fields[this.state.vocabFieldIdx].value;
+		                	field.values[0] = {value: this.state.vocab.records[0].fields[this.state.vocabFieldIdx].value};
 		            	}
 		                break;
 		            case "MULTISELECT":
 		                break;
 		        }
 		        this.closeHandler = document.addEventListener('click', (e) => this.closeMulti(e))
+		    },
+		    fieldPrepared() {
+		    	var field = this.props.field;
+		    	return field.values.length > 0 || field.type == "MULTISELECT"; 
 		    },
 		    closeMulti(e) {
 		        if(this.state.multiExpanded) {
@@ -171,9 +173,9 @@
 		        e.stopPropagation();
 		      	var field = this.props.field;
 		      	var recordValue = record.fields[this.state.vocabFieldIdx].value;
-		      	var idx = field.values.indexOf(recordValue);
+		      	var idx = field.values.findIndex(val => val.value == recordValue);
 		      	if(idx < 0) {
-		      	    field.values.push(recordValue)
+		      	    field.values.push({value: recordValue})
 		      	} else {
 		      	    field.values.splice(idx, 1);
 		      	    this.props.field.values = field.values;
@@ -184,19 +186,19 @@
 		        var field = this.props.field;
 		        switch(field.type) {
 		            case "BOOLEAN":
-		                field.values[0] = e.target.checked
+		                field.values[0].value = e.target.checked
 		                break;
 		            case "INPUT":
-		                field.values[0] = e.target.value;
+		                field.values[0].value = e.target.value;
 		                break;
 		            case "TEXTAREA":
-		                field.values[0] = e.target.value;
+		                field.values[0].value = e.target.value;
 		                this.setTextAreaHeight(e.target, e);
 		                break;
 		            case "DROPDOWN":
 		                for(var option of e.target.options) {
 		                    if(option.selected) {
-			                	field.values[0] = option.value;
+			                	field.values[0].value = option.value;
 		                    }
 		                }
 		                break;
@@ -223,8 +225,8 @@
 		    },
 		    checkBoxChecked(values) {
 		    	return values.length != 0 
-		    		&& typeof values[0] == "string" 
-		    		&& values[0].toLowerCase() == "true"
+		    		&& typeof values[0].value == "string" 
+		    		&& values[0].value.toLowerCase() == "true"
 		    }
 		}
 	</script>

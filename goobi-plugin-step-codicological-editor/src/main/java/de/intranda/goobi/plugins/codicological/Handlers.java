@@ -25,6 +25,7 @@ import de.intranda.goobi.plugins.CodicologicalEditor;
 import de.intranda.goobi.plugins.codicological.model.Box;
 import de.intranda.goobi.plugins.codicological.model.Column;
 import de.intranda.goobi.plugins.codicological.model.Field;
+import de.intranda.goobi.plugins.codicological.model.FieldValue;
 import de.intranda.goobi.plugins.codicological.model.ImagesResponse;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.exceptions.DAOException;
@@ -134,7 +135,7 @@ public class Handlers {
                     }
                     @SuppressWarnings("unchecked")
                     List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
-                    List<String> fieldValues = field.getValues();
+                    List<FieldValue> fieldValues = field.getValues();
                     int maxListLen = Math.max(metadataList.size(), fieldValues.size());
                     for (int i = 0; i < maxListLen; i++) {
                         //TODO: not sure if this works, better check...
@@ -144,12 +145,12 @@ public class Handlers {
                         }
                         if (i >= metadataList.size()) {
                             Metadata newMeta = new Metadata(mdt);
-                            newMeta.setValue(fieldValues.get(i));
+                            newMeta.setValue(fieldValues.get(i).getValue());
                             ds.addMetadata(newMeta);
                             continue;
                         }
                         Metadata oldMeta = metadataList.get(i);
-                        oldMeta.setValue(fieldValues.get(i));
+                        oldMeta.setValue(fieldValues.get(i).getValue());
                     }
                 }
             }
@@ -190,7 +191,9 @@ public class Handlers {
                         field.setShow(true);
                     }
                     for (Metadata md : metadataList) {
-                        field.getValues().add(md.getValue());
+                        String name = md.getType().getName();
+                        String value = md.getValue();
+                        field.getValues().add(new FieldValue(name, value));
                     }
                 }
             }
