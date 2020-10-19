@@ -129,6 +129,7 @@
 		        }
 		        switch(field.type) {
 		            case "BOOLEAN":
+		            	console.log(field.values[0])
 		            	if(field.values.length == 0) {
 		                	field.values[0] = {value: false};
 		            	}

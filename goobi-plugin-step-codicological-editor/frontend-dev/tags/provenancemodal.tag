@@ -138,7 +138,12 @@ export default {
 			},
 			addPerson(person) {
 				console.log("should be person:", person);
-				this.props.field.values.push(person);
+				let complexValue = {
+						type: "person",
+						firstName: person.fields[0].value,
+						lastName: person.fields[1].value
+				};
+				this.props.field.values.push({complexValue: complexValue});
 				this.props.valuesChanged();
 			}
 		}

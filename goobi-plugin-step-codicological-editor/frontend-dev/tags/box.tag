@@ -17,7 +17,7 @@
 					{field.name}
 				</a>
 			</div>
-			<div class="field-detail" each={field in props.box.fields} if={field.show && (!field.repeatable || field.values.length > 0)}>
+			<div class="field-detail" each={field in props.box.fields} if={field.show && field.type != "MODAL_PROVENANCE"}>
 				<div class="field-label">
 					<div class="label-text">
 						{field.name}
@@ -32,6 +32,9 @@
 					<Fieldvalue field={field} vocabularies={props.vocabularies}></Fieldvalue>
 				</div>
 			</div>
+            <template each={field in props.box.fields} if={field.show && field.type == "MODAL_PROVENANCE"}>
+                <Provenanceentry each={value in field.values} field={field} value={value.complexValue} />
+            </template>
 		</div>
 	</div>
     <Provenancemodal 
@@ -109,10 +112,12 @@
 	<script>
 	import Fieldvalue from './fieldvalue.tag';
 	import Provenancemodal from './provenancemodal.tag';
+	import Provenanceentry from './provenanceentry.tag';
 	export default {
 	    components: {
 			Fieldvalue,
-			Provenancemodal
+			Provenancemodal,
+			Provenanceentry
 	    },
 	    onBeforeMount(state, props) {
 	        this.state = {

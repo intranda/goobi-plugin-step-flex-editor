@@ -177,6 +177,7 @@ public class Handlers {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
                     String fieldMdt = field.getMetadatatype();
+                    //TODO: provenance values!
                     if (fieldMdt == null || "unknown".equals(fieldMdt)) {
                         continue;
                     }
@@ -191,9 +192,8 @@ public class Handlers {
                         field.setShow(true);
                     }
                     for (Metadata md : metadataList) {
-                        String name = md.getType().getName();
                         String value = md.getValue();
-                        field.getValues().add(new FieldValue(name, value));
+                        field.getValues().add(new FieldValue(value, null));
                     }
                 }
             }

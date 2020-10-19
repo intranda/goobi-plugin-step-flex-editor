@@ -11,7 +11,7 @@
 					<tr each={ item in state.values}>
 						<th>{item.name}</th>
 						<td>
-                            <template if={item.values.length == 1}>{item.values[0]}</template>
+                            <template if={item.values.length == 1}>{item.values[0].value}</template>
                             <ul if={item.values.length != 1}>
                                 <li each={value in item.values}>
                                     {value}
