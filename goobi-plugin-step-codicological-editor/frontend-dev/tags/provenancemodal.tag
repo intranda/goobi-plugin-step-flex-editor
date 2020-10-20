@@ -38,13 +38,15 @@
                         <th>Vorname</th>
                         <th>Nachname</th>
                         <th>GND</th>
+                        <th>Aktion</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr each={institution in state.filteredInstitutions}>
                         <td>{institution.fields[0].value}</td>
                         <td>{institution.fields[1].value}</td>
-<!--                         <td>{institution.fields[2].value}</td> -->
+                        <td></td>
+                        <td><button class="btn btn-primary" onclick={() => addInstitution(institution)}><i class="fa fa-plus"></i></button></td>
                     </tr>
                 </tbody>
             </table>
@@ -137,11 +139,19 @@ export default {
 				this.update();
 			},
 			addPerson(person) {
-				console.log("should be person:", person);
 				let complexValue = {
 						type: "person",
 						firstName: person.fields[0].value,
 						lastName: person.fields[1].value
+				};
+				this.props.field.values.push({complexValue: complexValue});
+				this.props.valuesChanged();
+			},
+			addInstitution(inst) {
+				let complexValue = {
+						type: "institution",
+						name: inst.fields[0].value,
+						gnd: inst.fields[1].value
 				};
 				this.props.field.values.push({complexValue: complexValue});
 				this.props.valuesChanged();

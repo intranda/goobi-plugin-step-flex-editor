@@ -116,16 +116,28 @@
 		        //this.fillField();
 		    },
 		    onMounted() {
+		    	this.init(true)
+		    },
+		    onBeforeUpdate() {
+		    	this.init(false)
+		    },
+		    init(update) {
 		    	var field = this.props.field;
-		        if(field.sourceVocabularies && field.sourceVocabularies.length == 1) {
+		        if(field.sourceVocabularies && field.sourceVocabularies.length > 0 && this.state) {
 		            this.state.vocab = this.props.vocabularies[field.sourceVocabularies] || {stub: true, struct: [], records: [{fields:[]}]};
 		            if(this.state.vocab.stub) {
 		            	this.state.vocabError = `Vocabulary "${field.sourceVocabularies}" was not found`;
-		            	this.update();
+		            	if(update) {
+		            		this.update();
+		            	}
 		            	return;
+		            } else {
+		            	this.state.vocabError = null;
 		            }
 		            this.state.vocabFieldIdx = this.state.vocab.struct.findIndex(f => f.mainEntry);
-		            this.update();
+		            if(update) {
+		            	this.update();
+		            }
 		        }
 		        switch(field.type) {
 		            case "BOOLEAN":

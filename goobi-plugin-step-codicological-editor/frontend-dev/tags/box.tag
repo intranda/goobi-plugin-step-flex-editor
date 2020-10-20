@@ -32,8 +32,13 @@
 					<Fieldvalue field={field} vocabularies={props.vocabularies}></Fieldvalue>
 				</div>
 			</div>
-            <template each={field in props.box.fields} if={field.show && field.type == "MODAL_PROVENANCE"}>
-                <Provenanceentry each={value in field.values} field={field} value={value.complexValue} />
+            <template each={(field, idx) in props.box.fields} if={field.show && field.type == "MODAL_PROVENANCE"}>
+                <Provenanceentry 
+                    each={value in field.values} 
+                    field={field} 
+                    value={value.complexValue} 
+                    msg={props.msg}
+                    deleteValue={getDeleteValueFromFieldFunction(field, idx)} />
             </template>
 		</div>
 	</div>
@@ -42,6 +47,7 @@
         hide={hideProvenanceModal}
         field={state.provenanceField} 
         vocabularies={props.vocabularies}
+        msg={props.msg}
         valuesChanged={valuesChanged} />
 
 	<style>
@@ -138,10 +144,11 @@
 	        if(field.repeatable) {
 	        	this.state.showProvenanceModal = true;
 	        }
-	        if(field.type = "MODAL_PROVENANCE") {
+	        if(field.type == "MODAL_PROVENANCE") {
 	        	this.state.provenanceField = field;
 	        }
 	        this.filterFields();
+	        this.update();
 	    },
 	    emptyField(field) {
 	        field.show = false;
@@ -164,6 +171,12 @@
 	    },
 	    valuesChanged() {
 	    	this.update();
+	    },
+	    getDeleteValueFromFieldFunction(field, valueIndex) {
+	    	return () => {
+	    		field.values.splice(valueIndex, 1);
+	    		this.update();
+	    	}
 	    }
 	}
 		

@@ -1,13 +1,13 @@
 <app>
 	<div class="row">
 		<div class="col-md-4">
-			<Box each={box in state.boxes[0].boxes} box={box} vocabularies={state.vocabularies}></Box>
+			<Box each={box in state.boxes[0].boxes} box={box} vocabularies={state.vocabularies} msg={msg}></Box>
 		</div>
 		<div class="col-md-4">
-			<Box each={box in state.boxes[1].boxes} box={box} vocabularies={state.vocabularies}></Box>
+			<Box each={box in state.boxes[1].boxes} box={box} vocabularies={state.vocabularies} msg={msg}></Box>
 		</div>
 		<div class="col-md-4">
-			<Box each={box in state.boxes[2].boxes} box={box} vocabularies={state.vocabularies}></Box>
+			<Box each={box in state.boxes[2].boxes} box={box} vocabularies={state.vocabularies} msg={msg}></Box>
 		</div>
 	</div>  
 	<div class="row" style="margin-top: 15px; margin-bottom: 20px;">
@@ -64,18 +64,20 @@
 		resp.json().then(json => {
 			this.state.boxes = json;
 			this.state.boxesLoaded = true;
-			if(this.state.vocabLoaded) {
+// 			if(this.state.vocabLoaded) {
+// 				console.log("get boxes - update")
 				this.update();
-			}
+// 			}
 		});
       });
       fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/images`).then(resp => {
   		resp.json().then(json => {
   			this.state.images = json.imageNames;
   			this.state.imageFolder = json.folder;
-  			if(this.state.vocabLoaded) {
+//   			if(this.state.vocabLoaded) {
+//   				console.log("get images - update")
   				this.update();
-  			}
+//   			}
   		});
       });
       fetch(`/goobi/plugins/ce/vocabularies`).then(resp => {
@@ -83,9 +85,10 @@
 			this.state.vocabularies = json;
 			console.log(this.state.vocabularies)
 			this.state.vocabLoaded = true;
-			if(this.state.boxesLoaded) {
+// 			if(this.state.boxesLoaded) {
+// 				console.log("get vocab - update")
 				this.update();
-			}
+// 			}
 		});
       });
       fetch(`/goobi/api/messages/${props.goobi_opts.language}`, {
