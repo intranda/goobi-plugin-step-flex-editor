@@ -32,11 +32,10 @@
               <label for="searchInstitution">Institution suchen</label>
               <input type="input" class="form-control" id="searchInstitution" placeholder="Institution suchen" onkeyup={filterInstitutions}>
             </div>
-             <table class="table" if={state.filteredInstitutions.length != 0}>
+            <table class="table" if={state.filteredInstitutions.length != 0}>
                 <thead>
                     <tr>
-                        <th>Vorname</th>
-                        <th>Nachname</th>
+                        <th>Name</th>
                         <th>GND</th>
                         <th>Aktion</th>
                     </tr>
@@ -44,8 +43,7 @@
                 <tbody>
                     <tr each={institution in state.filteredInstitutions}>
                         <td>{institution.fields[0].value}</td>
-                        <td>{institution.fields[1].value}</td>
-                        <td></td>
+                        <td><template if={institution.fields[1]}>{institution.fields[1].value}</template></td>
                         <td><button class="btn btn-primary" onclick={() => addInstitution(institution)}><i class="fa fa-plus"></i></button></td>
                     </tr>
                 </tbody>
@@ -74,12 +72,15 @@
 	}
 	.my-modal-bg .box {
 		min-width: 50vw;
-		max-height: 90vh;
 	}
 	.my-modal-bg .box .box-title {
 		color: white;
         font-size: 16px;
 	}
+    .my-modal-bg .box .box-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
 </style>
 
 <script>
@@ -136,6 +137,7 @@ export default {
 				this.state.filteredInstitutions = this.state.institutionVocabulary.records.filter(institution => {
 					return institution.fields.map(f => f.value.toLowerCase()).join(" ").indexOf(term) >= 0;
 				})
+				console.log(this.state.filteredInstitutions)
 				this.update();
 			},
 			addPerson(person) {
