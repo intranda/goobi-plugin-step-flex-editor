@@ -11,7 +11,7 @@
     <div class="field-detail" each={key in Object.keys(props.value)} if={key != 'type'}>
         <div class="field-label">
             <div class="label-text">
-                {msg(key)}
+                {key}
             </div>
         </div>
         <div class="value">

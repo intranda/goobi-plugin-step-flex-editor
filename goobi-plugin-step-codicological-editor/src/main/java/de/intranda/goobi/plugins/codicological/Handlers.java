@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -27,6 +28,7 @@ import de.intranda.goobi.plugins.codicological.model.Column;
 import de.intranda.goobi.plugins.codicological.model.Field;
 import de.intranda.goobi.plugins.codicological.model.FieldValue;
 import de.intranda.goobi.plugins.codicological.model.ImagesResponse;
+import de.intranda.goobi.plugins.codicological.model.Mapping;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -37,6 +39,8 @@ import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
 import ugh.dl.Metadata;
+import ugh.dl.MetadataGroup;
+import ugh.dl.MetadataGroupType;
 import ugh.dl.MetadataType;
 import ugh.dl.Prefs;
 import ugh.exceptions.MetadataTypeNotAllowedException;
@@ -176,24 +180,52 @@ public class Handlers {
         for (Column col : colList) {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
-                    String fieldMdt = field.getMetadatatype();
-                    //TODO: provenance values!
-                    if (fieldMdt == null || "unknown".equals(fieldMdt)) {
-                        continue;
-                    }
-                    //look up metadata of top DS and write value(s) to field
-                    MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
-                    if (mdt == null) {
-                        throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
-                    }
-                    @SuppressWarnings("unchecked")
-                    List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
-                    if (!metadataList.isEmpty()) {
-                        field.setShow(true);
-                    }
-                    for (Metadata md : metadataList) {
-                        String value = md.getValue();
-                        field.getValues().add(new FieldValue(value, null));
+                    List<Mapping> complexMappings = field.getComplexMappings();
+                    if (!complexMappings.isEmpty()) {
+                        Map<String, List<FieldValue>> groupMap = new HashMap<>();
+                        for (Mapping mapping : complexMappings) {
+                            String mappingMdt = mapping.getMetadataType();
+                            if (mappingMdt.contains("/")) {
+                                String groupName = mappingMdt.split("/")[0];
+                                MetadataGroupType groupType = prefs.getMetadataGroupTypeByName(groupName);
+                                List<MetadataGroup> allGroups = ds.getAllMetadataGroupsByType(groupType);
+                                List<FieldValue> values = groupMap.get(groupName);
+                                if (values == null) {
+                                    values = new ArrayList<>();
+                                }
+                                for (int i = 0; i < allGroups.size(); i++) {
+                                    MetadataGroup group = allGroups.get(i);
+                                    String value = group.getMetadataByType(mappingMdt.split("/")[1]).get(0).getValue();
+                                    if (i >= values.size()) {
+                                        Map<String, String> complexValue = new HashMap<String, String>();
+                                        complexValue.put(mapping.getVocabularyName(), value);
+                                        values.add(new FieldValue(null, complexValue));
+                                    } else {
+                                        values.get(i).getComplexValue().put(mapping.getVocabularyName(), value);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        String fieldMdt = field.getMetadatatype();
+                        //TODO: provenance values!
+                        if (fieldMdt == null || "unknown".equals(fieldMdt)) {
+                            continue;
+                        }
+                        //look up metadata of top DS and write value(s) to field
+                        MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
+                        if (mdt == null) {
+                            throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
+                        }
+                        @SuppressWarnings("unchecked")
+                        List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
+                        if (!metadataList.isEmpty()) {
+                            field.setShow(true);
+                        }
+                        for (Metadata md : metadataList) {
+                            String value = md.getValue();
+                            field.getValues().add(new FieldValue(value, null));
+                        }
                     }
                 }
             }

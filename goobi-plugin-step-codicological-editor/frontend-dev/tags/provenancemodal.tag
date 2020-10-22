@@ -142,19 +142,27 @@ export default {
 			},
 			addPerson(person) {
 				let complexValue = {
-						type: "person",
-						firstName: person.fields[0].value,
-						lastName: person.fields[1].value
+						type: "Person",
 				};
+				for(let mapping of this.props.field.complexMappings) {
+					let field = person.fields.find(field => field.label == mapping.vocabularyName);
+					if(field) {
+						complexValue[mapping.vocabularyName] = field.value; 
+					}
+				}
 				this.props.field.values.push({complexValue: complexValue});
 				this.props.valuesChanged();
 			},
 			addInstitution(inst) {
 				let complexValue = {
-						type: "institution",
-						name: inst.fields[0].value,
-						gnd: inst.fields[1].value
+						type: "Institution",
 				};
+				for(let mapping of this.props.field.complexMappings) {
+					let field = inst.fields.find(field => field.label == mapping.vocabularyName);
+					if(field) {
+						complexValue[mapping.vocabularyName] = field.value; 
+					}
+				}
 				this.props.field.values.push({complexValue: complexValue});
 				this.props.valuesChanged();
 			}
