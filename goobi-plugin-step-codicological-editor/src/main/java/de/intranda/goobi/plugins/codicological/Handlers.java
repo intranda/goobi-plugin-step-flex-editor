@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -128,33 +129,50 @@ public class Handlers {
         for (Column col : userInput) {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
-                    String fieldMdt = field.getMetadatatype();
-                    if (fieldMdt == null || "unknown".equals(fieldMdt)) {
-                        continue;
-                    }
-                    //look up metadata of top DS and write value(s) to field
-                    MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
-                    if (mdt == null) {
-                        throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
-                    }
-                    @SuppressWarnings("unchecked")
-                    List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
-                    List<FieldValue> fieldValues = field.getValues();
-                    int maxListLen = Math.max(metadataList.size(), fieldValues.size());
-                    for (int i = 0; i < maxListLen; i++) {
-                        //TODO: not sure if this works, better check...
-                        if (i >= fieldValues.size()) {
-                            ds.removeMetadata(metadataList.get(i));
+                    List<Mapping> complexMappings = field.getComplexMappings();
+                    if (!complexMappings.isEmpty()) {
+                        Map<String, String> vocabNameToMdtMap = complexMappings.stream()
+                                .collect(Collectors.toMap(Mapping::getVocabularyName, Mapping::getMetadataType));
+                        for (FieldValue value : field.getValues()) {
+                            for (String key : value.getComplexValue().keySet()) {
+                                String mappingMdt = vocabNameToMdtMap.get(key);
+                                if (mappingMdt.contains("/")) {
+                                    String groupName = mappingMdt.split("/")[0];
+                                    MetadataGroupType groupType = prefs.getMetadataGroupTypeByName(groupName);
+                                    List<MetadataGroup> allGroups = ds.getAllMetadataGroupsByType(groupType);
+
+                                }
+                            }
+                        }
+                    } else {
+                        String fieldMdt = field.getMetadatatype();
+                        if (fieldMdt == null || "unknown".equals(fieldMdt)) {
                             continue;
                         }
-                        if (i >= metadataList.size()) {
-                            Metadata newMeta = new Metadata(mdt);
-                            newMeta.setValue(fieldValues.get(i).getValue());
-                            ds.addMetadata(newMeta);
-                            continue;
+                        //look up metadata of top DS and write value(s) to field
+                        MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
+                        if (mdt == null) {
+                            throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
                         }
-                        Metadata oldMeta = metadataList.get(i);
-                        oldMeta.setValue(fieldValues.get(i).getValue());
+                        @SuppressWarnings("unchecked")
+                        List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
+                        List<FieldValue> fieldValues = field.getValues();
+                        int maxListLen = Math.max(metadataList.size(), fieldValues.size());
+                        for (int i = 0; i < maxListLen; i++) {
+                            //TODO: not sure if this works, better check...
+                            if (i >= fieldValues.size()) {
+                                ds.removeMetadata(metadataList.get(i));
+                                continue;
+                            }
+                            if (i >= metadataList.size()) {
+                                Metadata newMeta = new Metadata(mdt);
+                                newMeta.setValue(fieldValues.get(i).getValue());
+                                ds.addMetadata(newMeta);
+                                continue;
+                            }
+                            Metadata oldMeta = metadataList.get(i);
+                            oldMeta.setValue(fieldValues.get(i).getValue());
+                        }
                     }
                 }
             }
@@ -185,6 +203,9 @@ public class Handlers {
                         Map<String, List<FieldValue>> groupMap = new HashMap<>();
                         for (Mapping mapping : complexMappings) {
                             String mappingMdt = mapping.getMetadataType();
+                            if (mappingMdt == null || mappingMdt.equals("unknown")) {
+                                continue;
+                            }
                             if (mappingMdt.contains("/")) {
                                 String groupName = mappingMdt.split("/")[0];
                                 MetadataGroupType groupType = prefs.getMetadataGroupTypeByName(groupName);
