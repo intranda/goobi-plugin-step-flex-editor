@@ -10,7 +10,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
@@ -28,6 +31,8 @@ import de.intranda.goobi.plugins.codicological.model.Box;
 import de.intranda.goobi.plugins.codicological.model.Column;
 import de.intranda.goobi.plugins.codicological.model.Field;
 import de.intranda.goobi.plugins.codicological.model.FieldValue;
+import de.intranda.goobi.plugins.codicological.model.GroupMapping;
+import de.intranda.goobi.plugins.codicological.model.GroupValue;
 import de.intranda.goobi.plugins.codicological.model.ImagesResponse;
 import de.intranda.goobi.plugins.codicological.model.Mapping;
 import de.sub.goobi.config.ConfigPlugins;
@@ -61,6 +66,14 @@ public class Handlers {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
                     for (String vocabName : field.getSourceVocabularies()) {
+                        if (vocabName != null && !vocabMap.containsKey(vocabName)) {
+                            Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
+                            VocabularyManager.getAllRecords(vocab);
+                            vocabMap.put(vocabName, vocab);
+                        }
+                    }
+                    for (GroupMapping gm : field.getGroupMappings()) {
+                        String vocabName = gm.getSourceVocabulary();
                         if (vocabName != null && !vocabMap.containsKey(vocabName)) {
                             Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
                             VocabularyManager.getAllRecords(vocab);
@@ -129,20 +142,33 @@ public class Handlers {
         for (Column col : userInput) {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
-                    List<Mapping> complexMappings = field.getComplexMappings();
-                    if (!complexMappings.isEmpty()) {
-                        Map<String, String> vocabNameToMdtMap = complexMappings.stream()
-                                .collect(Collectors.toMap(Mapping::getVocabularyName, Mapping::getMetadataType));
-                        for (FieldValue value : field.getValues()) {
-                            for (String key : value.getComplexValue().keySet()) {
-                                String mappingMdt = vocabNameToMdtMap.get(key);
-                                if (mappingMdt.contains("/")) {
-                                    String groupName = mappingMdt.split("/")[0];
-                                    MetadataGroupType groupType = prefs.getMetadataGroupTypeByName(groupName);
-                                    List<MetadataGroup> allGroups = ds.getAllMetadataGroupsByType(groupType);
-
-                                }
+                    if (field.isMultiVocabulary()) {
+                        Set<String> allGroups = field.getGroupMappings()
+                                .stream()
+                                .map(GroupMapping::getGroupName)
+                                .collect(Collectors.toSet());
+                        //delete all groups managed by this field
+                        for (String groupName : allGroups) {
+                            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupName);
+                            for (MetadataGroup metadataGroup : ds.getAllMetadataGroupsByType(mdgt)) {
+                                ds.removeMetadataGroup(metadataGroup, true);
                             }
+                        }
+                        for (FieldValue fv : field.getValues()) {
+                            GroupValue groupValue = fv.getGroupValue();
+                            Map<String, String> vocabNameToMdt = field.getGroupMappings()
+                                    .stream()
+                                    .filter(gm -> gm.getSourceVocabulary().equals(groupValue.getSourceVocabulary()))
+                                    .flatMap(gm -> gm.getMappings().stream())
+                                    .collect(Collectors.toMap(Mapping::getVocabularyName, Mapping::getMetadataType));
+                            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupValue.getGroupName());
+                            MetadataGroup newGroup = new MetadataGroup(mdgt);
+                            for (String vocabName : groupValue.getValues().keySet()) {
+                                MetadataType mdt = prefs.getMetadataTypeByName(vocabNameToMdt.get(vocabName));
+                                Metadata metadata = new Metadata(mdt);
+                                newGroup.addMetadata(metadata);
+                            }
+                            ds.addMetadataGroup(newGroup);
                         }
                     } else {
                         String fieldMdt = field.getMetadatatype();
@@ -198,38 +224,31 @@ public class Handlers {
         for (Column col : colList) {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
-                    List<Mapping> complexMappings = field.getComplexMappings();
-                    if (!complexMappings.isEmpty()) {
-                        Map<String, List<FieldValue>> groupMap = new HashMap<>();
-                        for (Mapping mapping : complexMappings) {
-                            String mappingMdt = mapping.getMetadataType();
-                            if (mappingMdt == null || mappingMdt.equals("unknown")) {
-                                continue;
-                            }
-                            if (mappingMdt.contains("/")) {
-                                String groupName = mappingMdt.split("/")[0];
-                                MetadataGroupType groupType = prefs.getMetadataGroupTypeByName(groupName);
-                                List<MetadataGroup> allGroups = ds.getAllMetadataGroupsByType(groupType);
-                                List<FieldValue> values = groupMap.get(groupName);
-                                if (values == null) {
-                                    values = new ArrayList<>();
-                                }
-                                for (int i = 0; i < allGroups.size(); i++) {
-                                    MetadataGroup group = allGroups.get(i);
-                                    String value = group.getMetadataByType(mappingMdt.split("/")[1]).get(0).getValue();
-                                    if (i >= values.size()) {
-                                        Map<String, String> complexValue = new HashMap<String, String>();
-                                        complexValue.put(mapping.getVocabularyName(), value);
-                                        values.add(new FieldValue(null, complexValue));
-                                    } else {
-                                        values.get(i).getComplexValue().put(mapping.getVocabularyName(), value);
+                    if (field.isMultiVocabulary()) {
+                        Map<String, GroupMapping> metadataGroupToGroupMapping = field.getGroupMappings()
+                                .stream()
+                                .collect(Collectors.toMap(GroupMapping::getGroupName, Function.identity()));
+                        for (MetadataGroup mdg : ds.getAllMetadataGroups()) {
+                            GroupMapping gm = metadataGroupToGroupMapping.get(mdg.getType().getName());
+                            if (gm != null) {
+                                Map<String, String> values = new HashMap<String, String>();
+                                for (Metadata md : mdg.getMetadataList()) {
+                                    Optional<String> vocabName = gm.getMappings()
+                                            .stream()
+                                            .map(Mapping::getMetadataType)
+                                            .filter(mdType -> mdType.equals(md.getType().getName()))
+                                            .findAny();
+                                    if (vocabName.isPresent()) {
+                                        values.put(vocabName.get(), md.getValue());
                                     }
                                 }
+                                GroupValue groupValue = new GroupValue(gm.getGroupName(), gm.getSourceVocabulary(), values);
+                                field.getValues().add(new FieldValue(null, groupValue));
                             }
                         }
+
                     } else {
                         String fieldMdt = field.getMetadatatype();
-                        //TODO: provenance values!
                         if (fieldMdt == null || "unknown".equals(fieldMdt)) {
                             continue;
                         }

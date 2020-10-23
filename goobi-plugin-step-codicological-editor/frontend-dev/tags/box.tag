@@ -36,7 +36,7 @@
                 <Provenanceentry 
                     each={value in field.values} 
                     field={field} 
-                    value={value.complexValue} 
+                    value={value.groupValue} 
                     msg={props.msg}
                     deleteValue={getDeleteValueFromFieldFunction(field, idx)} />
             </template>
@@ -141,10 +141,8 @@
 	    },
 	    showField(field) {
 	        field.show = true;
-	        if(field.repeatable) {
+	        if(field.multiVocabulary) {
 	        	this.state.showProvenanceModal = true;
-	        }
-	        if(field.type == "MODAL_PROVENANCE") {
 	        	this.state.provenanceField = field;
 	        }
 	        this.filterFields();

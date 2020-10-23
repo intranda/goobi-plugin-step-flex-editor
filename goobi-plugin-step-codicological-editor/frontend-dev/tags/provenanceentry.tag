@@ -8,14 +8,14 @@
         </div>
         
     </div>
-    <div class="field-detail" each={key in Object.keys(props.value)} if={key != 'type'}>
+    <div class="field-detail" each={key in Object.keys(props.value.values)} if={key != 'type'}>
         <div class="field-label">
             <div class="label-text">
                 {key}
             </div>
         </div>
         <div class="value">
-            <input class="form-control" disabled value={props.value[key]}></input>
+            <input class="form-control" disabled value={props.value.values[key]}></input>
         </div>
     </div>
     

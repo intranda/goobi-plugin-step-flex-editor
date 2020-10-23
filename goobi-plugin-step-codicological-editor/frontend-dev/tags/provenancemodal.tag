@@ -2,52 +2,39 @@
 <div class="my-modal-bg" onclick={props.hide}>
 	<div class="box box-color box-bordered" onclick={ e => e.stopPropagation()}>
 		<div class="box-title">
-			<span>Provenienz hinzufügen</span>
+			<span>{props.field.name}</span>
 			<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
 		</div>
         <div class="box-content">
-            <div class="form-group">
-              <label for="searchPerson">Person suchen</label>
-              <input type="input" class="form-control" id="searchPerson" placeholder="Person suchen" onkeyup={filterPersons}>
-            </div>
-            <table class="table" if={state.filteredPersons.length != 0}>
-                <thead>
-                    <tr>
-                        <th>Vorname</th>
-                        <th>Nachname</th>
-                        <th>GND</th>
-                        <th>Aktion</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr each={person in state.filteredPersons}>
-                        <td>{person.fields[0].value}</td>
-                        <td>{person.fields[1].value}</td>
-                        <td></td>
-                        <td><button class="btn btn-primary" onclick={() => addPerson(person)}><i class="fa fa-plus"></i></button></td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="form-group">
-              <label for="searchInstitution">Institution suchen</label>
-              <input type="input" class="form-control" id="searchInstitution" placeholder="Institution suchen" onkeyup={filterInstitutions}>
-            </div>
-            <table class="table" if={state.filteredInstitutions.length != 0}>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>GND</th>
-                        <th>Aktion</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr each={institution in state.filteredInstitutions}>
-                        <td>{institution.fields[0].value}</td>
-                        <td><template if={institution.fields[1]}>{institution.fields[1].value}</template></td>
-                        <td><button class="btn btn-primary" onclick={() => addInstitution(institution)}><i class="fa fa-plus"></i></button></td>
-                    </tr>
-                </tbody>
-            </table>
+            <template each={group in props.field.groupMappings}>
+                <div class="form-group">
+                  <label for="searchPerson">{group.sourceVocabulary} durchsuchen</label>
+                  <input 
+                    type="input" 
+                    class="form-control" 
+                    id="searchPerson" 
+                    placeholder="{group.sourceVocabulary} durchsuchen" 
+                    onkeyup={(e) => filterVocabulary(group.sourceVocabulary, e)}>
+                </div>
+                <table class="table" if={state.filteredVocabs[group.sourceVocabulary] && state.filteredVocabs[group.sourceVocabulary].length != 0}>
+                    <thead>
+                        <tr>
+                            <th each={mapping in group.mappings}>{mapping.vocabularyName}</th>
+                            <th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr each={value in state.filteredVocabs[group.sourceVocabulary]}>
+                            <td each={mapping in group.mappings}>
+                                <template if={value.fields.find(f => f.label == mapping.vocabularyName)}>
+                                    {value.fields.find(f => f.label == mapping.vocabularyName).value}
+                                </template>
+                            </td>
+                            <td><button class="btn btn-primary" onclick={() => addValue(group, value)}><i class="fa fa-plus"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </template>
         </div>
     </div>
 </div>
@@ -89,18 +76,16 @@ export default {
 				this.listenerFunction = this.keyListener.bind(this);
 				document.addEventListener("keyup", this.listenerFunction);
 				this.state = {
-					filteredPersons: [],
-					filteredInstitutions: []
+					filteredVocabs: {}
 				}
 			},
 			onMounted() {
+				console.log(this.props.field)
 				let vocabs = this.props.vocabularies;
 				let field = this.props.field;
 				this.state = {
-					personVocabulary: { ...vocabs[field.sourceVocabularies[0]]},
-					institutionVocabulary: { ...vocabs[field.sourceVocabularies[1]]},
-					filteredPersons: [],
-					filteredInstitutions: []
+					vocabs: {...vocabs},
+					filteredVocabs: {}
 				}
 				console.log(this.state)
 			},
@@ -115,55 +100,34 @@ export default {
 			msg(key) {
 				return this.props.msg(key);
 			},
-			filterPersons(e) {
+			filterVocabulary(vocabularyName, e) {
 				let term = e.target.value.toLowerCase();
-				if('' == term) {
-					this.state.filteredPersons = [];
+				if('' == term || !this.state.vocabs[vocabularyName]) {
+					this.state.filteredVocabs[vocabularyName] = null;
 					this.update();
 					return;
 				}
-				this.state.filteredPersons = this.state.personVocabulary.records.filter(person => {
-					return person.fields.map(f => f.value.toLowerCase()).join(" ").indexOf(term) >= 0;
+				this.state.filteredVocabs[vocabularyName] = this.state.vocabs[vocabularyName].records.filter(val => {
+					return val.fields.map(f => f.value.toLowerCase()).join(" ").indexOf(term) >= 0;
 				})
 				this.update();
 			},
-			filterInstitutions(e) {
-				let term = e.target.value.toLowerCase();
-				if('' == term) {
-					this.state.filteredInstitutions = [];
-					this.update();
-					return;
-				}
-				this.state.filteredInstitutions = this.state.institutionVocabulary.records.filter(institution => {
-					return institution.fields.map(f => f.value.toLowerCase()).join(" ").indexOf(term) >= 0;
-				})
-				console.log(this.state.filteredInstitutions)
-				this.update();
-			},
-			addPerson(person) {
-				let complexValue = {
-						type: "Person",
+			addValue(group, value) {
+				let groupValue = {
+						type: group.label,
+						groupName: group.groupName,
+						sourceVocabulary: group.sourceVocabulary
 				};
-				for(let mapping of this.props.field.complexMappings) {
-					let field = person.fields.find(field => field.label == mapping.vocabularyName);
+				let complexValue = {};
+				for(let mapping of group.mappings) {
+					let field = value.fields.find(field => field.label == mapping.vocabularyName);
 					if(field) {
 						complexValue[mapping.vocabularyName] = field.value; 
 					}
 				}
-				this.props.field.values.push({complexValue: complexValue});
-				this.props.valuesChanged();
-			},
-			addInstitution(inst) {
-				let complexValue = {
-						type: "Institution",
-				};
-				for(let mapping of this.props.field.complexMappings) {
-					let field = inst.fields.find(field => field.label == mapping.vocabularyName);
-					if(field) {
-						complexValue[mapping.vocabularyName] = field.value; 
-					}
-				}
-				this.props.field.values.push({complexValue: complexValue});
+				groupValue.values = complexValue;
+				console.log(groupValue)
+				this.props.field.values.push({groupValue: groupValue});
 				this.props.valuesChanged();
 			}
 		}
