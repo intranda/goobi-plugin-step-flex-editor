@@ -30,7 +30,7 @@ pipeline {
   
   post {
     success {
-      archiveArtifacts artifacts: '**/target/*.tar, */plugin_*.xml, plugin_*.xml', fingerprint: true, onlyIfSuccessful: true
+      archiveArtifacts artifacts: '**/target/*.tar, **/plugin_*.xml, plugin_*.xml', fingerprint: true, onlyIfSuccessful: true
     }
     changed {
       emailext(
