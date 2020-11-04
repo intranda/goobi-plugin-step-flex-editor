@@ -228,7 +228,10 @@ public class Handlers {
                         Map<String, GroupMapping> metadataGroupToGroupMapping = field.getGroupMappings()
                                 .stream()
                                 .collect(Collectors.toMap(GroupMapping::getGroupName, Function.identity()));
-                        for (MetadataGroup mdg : ds.getAllMetadataGroups()) {
+                        List<MetadataGroup> groups = Optional
+                                .ofNullable(ds.getAllMetadataGroups())
+                                .orElse(new ArrayList<>());
+                        for (MetadataGroup mdg : groups) {
                             GroupMapping gm = metadataGroupToGroupMapping.get(mdg.getType().getName());
                             if (gm != null) {
                                 Map<String, String> values = new HashMap<String, String>();

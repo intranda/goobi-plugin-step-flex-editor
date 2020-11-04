@@ -32,13 +32,13 @@
                 <include>**</include>
             </includes>
         </fileSet>
-        <fileSet>
-            <directory>./doc/</directory>
-            <useDefaultExcludes>true</useDefaultExcludes>
-            <outputDirectory>config/</outputDirectory>
-            <includes>
-                <include>*.xml</include>
-            </includes>
-        </fileSet>
+<!--         <fileSet> -->
+<!--             <directory>./doc/</directory> -->
+<!--             <useDefaultExcludes>true</useDefaultExcludes> -->
+<!--             <outputDirectory>config/</outputDirectory> -->
+<!--             <includes> -->
+<!--                 <include>*.xml</include> -->
+<!--             </includes> -->
+<!--         </fileSet> -->
 	</fileSets>
 </assembly>
