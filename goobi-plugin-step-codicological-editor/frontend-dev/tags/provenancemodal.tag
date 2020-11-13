@@ -16,6 +16,9 @@
                     placeholder="{group.sourceVocabulary} durchsuchen" 
                     onkeyup={(e) => filterVocabulary(group.sourceVocabulary, e)}>
                 </div>
+                <div if={!state.filteredVocabs[group.sourceVocabulary] || state.filteredVocabs[group.sourceVocabulary].length == 0}>
+                    <Vocabentryform vocabname={group.sourceVocabulary} vocabularies={props.vocabularies} msg={props.msg}></Vocabentryform>
+                </div>
                 <table class="table" if={state.filteredVocabs[group.sourceVocabulary] && state.filteredVocabs[group.sourceVocabulary].length != 0}>
                     <thead>
                         <tr>
@@ -59,6 +62,7 @@
 	}
 	.my-modal-bg .box {
 		min-width: 50vw;
+        max-width: 50vw;
 	}
 	.my-modal-bg .box .box-title {
 		color: white;
@@ -71,66 +75,70 @@
 </style>
 
 <script>
+import Vocabentryform from './vocabentryform.tag'
 export default {
-			onBeforeMount(state, props) {
-				this.listenerFunction = this.keyListener.bind(this);
-				document.addEventListener("keyup", this.listenerFunction);
-				this.state = {
-					filteredVocabs: {}
-				}
-			},
-			onMounted() {
-				console.log(this.props.field)
-				let vocabs = this.props.vocabularies;
-				let field = this.props.field;
-				this.state = {
-					vocabs: {...vocabs},
-					filteredVocabs: {}
-				}
-				console.log(this.state)
-			},
-			onBeforeUnmount() {
-		    	document.removeEventListener("keyup", this.listenerFunction);
-		    },
-		    keyListener(e) {
-		    	if(e.key == "Escape") {
-		    		this.props.hide();
-		    	}
-		    },
-			msg(key) {
-				return this.props.msg(key);
-			},
-			filterVocabulary(vocabularyName, e) {
-				let term = e.target.value.toLowerCase();
-				if('' == term || !this.state.vocabs[vocabularyName]) {
-					this.state.filteredVocabs[vocabularyName] = null;
-					this.update();
-					return;
-				}
-				this.state.filteredVocabs[vocabularyName] = this.state.vocabs[vocabularyName].records.filter(val => {
-					return val.fields.map(f => f.value.toLowerCase()).join(" ").indexOf(term) >= 0;
-				})
-				this.update();
-			},
-			addValue(group, value) {
-				let groupValue = {
-						type: group.label,
-						groupName: group.groupName,
-						sourceVocabulary: group.sourceVocabulary
-				};
-				let complexValue = {};
-				for(let mapping of group.mappings) {
-					let field = value.fields.find(field => field.label == mapping.vocabularyName);
-					if(field) {
-						complexValue[mapping.vocabularyName] = field.value; 
-					}
-				}
-				groupValue.values = complexValue;
-				console.log(groupValue)
-				this.props.field.values.push({groupValue: groupValue});
-				this.props.valuesChanged();
+	components: {
+    	Vocabentryform
+	},
+	onBeforeMount(state, props) {
+		this.listenerFunction = this.keyListener.bind(this);
+		document.addEventListener("keyup", this.listenerFunction);
+		this.state = {
+			filteredVocabs: {}
+		}
+	},
+	onMounted() {
+		console.log(this.props.field)
+		let vocabs = this.props.vocabularies;
+		let field = this.props.field;
+		this.state = {
+			vocabs: {...vocabs},
+			filteredVocabs: {}
+		}
+		console.log(this.state)
+	},
+	onBeforeUnmount() {
+    	document.removeEventListener("keyup", this.listenerFunction);
+    },
+    keyListener(e) {
+    	if(e.key == "Escape") {
+    		this.props.hide();
+    	}
+    },
+	msg(key) {
+		return this.props.msg(key);
+	},
+	filterVocabulary(vocabularyName, e) {
+		let term = e.target.value.toLowerCase();
+		if('' == term || !this.state.vocabs[vocabularyName]) {
+			this.state.filteredVocabs[vocabularyName] = null;
+			this.update();
+			return;
+		}
+		this.state.filteredVocabs[vocabularyName] = this.state.vocabs[vocabularyName].records.filter(val => {
+			return val.fields.map(f => f.value.toLowerCase()).join(" ").indexOf(term) >= 0;
+		})
+		this.update();
+	},
+	addValue(group, value) {
+		let groupValue = {
+				type: group.label,
+				groupName: group.groupName,
+				sourceVocabulary: group.sourceVocabulary
+		};
+		let complexValue = {};
+		for(let mapping of group.mappings) {
+			let field = value.fields.find(field => field.label == mapping.vocabularyName);
+			if(field) {
+				complexValue[mapping.vocabularyName] = field.value; 
 			}
 		}
+		groupValue.values = complexValue;
+		console.log(groupValue)
+		this.props.field.values.push({groupValue: groupValue});
+		this.props.valuesChanged();
+	}
+}
 
 </script>
 </provenancemodal>
