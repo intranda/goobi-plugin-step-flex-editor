@@ -76,8 +76,10 @@ public class Handlers {
                         String vocabName = gm.getSourceVocabulary();
                         if (vocabName != null && !vocabMap.containsKey(vocabName)) {
                             Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
-                            VocabularyManager.getAllRecords(vocab);
-                            vocabMap.put(vocabName, vocab);
+                            if (vocab != null) {
+                                VocabularyManager.getAllRecords(vocab);
+                                vocabMap.put(vocabName, vocab);
+                            }
                         }
                     }
                 }
