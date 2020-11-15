@@ -21,6 +21,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.goobi.beans.Process;
 import org.goobi.beans.Ruleset;
+import org.goobi.vocabulary.VocabRecord;
 import org.goobi.vocabulary.Vocabulary;
 
 import com.google.gson.Gson;
@@ -116,6 +117,14 @@ public class Handlers {
         Process p = ProcessManager.getProcessById(processId);
         saveMetadata(userInput, p);
         return "";
+    };
+
+    public static Route newVocabEntry = (req, res) -> {
+        String vocabName = req.params("vocabName");
+        Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
+        VocabRecord record = gson.fromJson(req.body(), VocabRecord.class);
+        VocabularyManager.saveRecord(vocab.getId(), record);
+        return record;
     };
 
     private static List<Column> readColsFromConfig(XMLConfiguration conf) {

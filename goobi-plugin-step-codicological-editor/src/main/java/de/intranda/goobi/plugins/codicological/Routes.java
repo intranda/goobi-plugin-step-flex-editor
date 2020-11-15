@@ -13,6 +13,7 @@ public class Routes {
             http.get("/process/:processid/mets", Handlers.getMetadata, gson::toJson);
             http.get("/process/:processid/images", Handlers.getImages, gson::toJson);
             http.post("/process/:processid/mets", Handlers.saveMets);
+            http.post("/process/:vocabname/records", Handlers.newVocabEntry, gson::toJson);
         });
     }
 }
