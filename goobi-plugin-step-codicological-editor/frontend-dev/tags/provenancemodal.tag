@@ -17,7 +17,12 @@
                     onkeyup={(e) => filterVocabulary(group.sourceVocabulary, e)}>
                 </div>
                 <div if={!state.filteredVocabs[group.sourceVocabulary] || state.filteredVocabs[group.sourceVocabulary].length == 0}>
-                    <Vocabentryform vocabname={group.sourceVocabulary} vocabularies={props.vocabularies} msg={props.msg}></Vocabentryform>
+                    <Vocabentryform 
+                        vocabname={group.sourceVocabulary} 
+                        vocabularies={props.vocabularies}
+                        entryCreated={entryCreated} 
+                        msg={props.msg}>
+                    </Vocabentryform>
                 </div>
                 <table class="table" if={state.filteredVocabs[group.sourceVocabulary] && state.filteredVocabs[group.sourceVocabulary].length != 0}>
                     <thead>
@@ -137,6 +142,9 @@ export default {
 		console.log(groupValue)
 		this.props.field.values.push({groupValue: groupValue});
 		this.props.valuesChanged();
+	},
+	entryCreated(entry) {
+		console.log("modal:", entry)
 	}
 }
 

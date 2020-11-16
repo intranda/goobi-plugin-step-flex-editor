@@ -123,6 +123,9 @@ public class Handlers {
         String vocabName = req.params("vocabName");
         Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
         VocabRecord record = gson.fromJson(req.body(), VocabRecord.class);
+        for (int i = 0; i < record.getFields().size(); i++) {
+            record.getFields().get(i).setDefinition(vocab.getStruct().get(i));
+        }
         VocabularyManager.saveRecord(vocab.getId(), record);
         return record;
     };

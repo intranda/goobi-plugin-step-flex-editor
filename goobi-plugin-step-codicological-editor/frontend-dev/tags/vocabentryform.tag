@@ -17,10 +17,19 @@
 	            onkeyup={e => editField(entry.label, e.target.value)}
 	        ></input>
 	    </div>
+        <div class="bottom-form">
+            <button class="btn btn-primary" onclick={saveNewEntry}>Erzeugen</button>
+        </div>
 	</div>
 </div>
 
 <style>
+   .bottom-form {
+       width: 100%;
+       display: flex;
+       flex-direction: row-reverse;
+       margin-bottom: 10px;
+   }
    .wrapper {
        margin-bottom: 15px;
    }
@@ -93,6 +102,25 @@ export default {
     	}
     	this.update();
     },
+    saveNewEntry() {
+    	console.log(this.state.struct)
+    	fetch(`/goobi/plugins/ce/vocabularies/${this.props.vocabname}/records`, {
+    		method: "POST",
+    		body: JSON.stringify({fields: this.state.fields})
+    	}).then(resp => {
+    		console.log(resp)
+			if(resp.status >= 400) {
+				alert("Eintrag konnte nicht gespeichert werden");
+				return;
+			}
+    		resp.json().then(json => {
+        		this.props.entryCreated(json);
+    		})
+    	}).catch(err => {
+    		console.log("Error saving vocab entry", err)
+    		alert("Eintrag konnte nicht gespeichert werden")
+    	})
+    }
 }
 
 </script>
