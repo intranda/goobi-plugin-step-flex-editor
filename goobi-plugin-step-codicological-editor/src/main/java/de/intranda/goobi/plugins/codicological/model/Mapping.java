@@ -8,12 +8,12 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Mapping {
-    private String vocabularyName;
+    private String sourceVocabulary;
     private String metadataType;
 
     public static Mapping fromConfig(HierarchicalConfiguration conf) {
-        String vocabularyName = conf.getString("./@vocabularyName");
+        String sourceVocabulary = conf.getString("./@sourceVocabulary");
         String metadataType = conf.getString("./@metadataType");
-        return new Mapping(vocabularyName, metadataType);
+        return new Mapping(sourceVocabulary, metadataType);
     }
 }

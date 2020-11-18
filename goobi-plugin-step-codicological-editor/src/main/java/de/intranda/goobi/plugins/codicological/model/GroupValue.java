@@ -9,6 +9,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class GroupValue {
     private String groupName;
-    private String sourceVocabulary;
     private Map<String, String> values;
 }

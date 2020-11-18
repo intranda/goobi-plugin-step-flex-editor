@@ -74,12 +74,14 @@ public class Handlers {
                         }
                     }
                     for (GroupMapping gm : field.getGroupMappings()) {
-                        String vocabName = gm.getSourceVocabulary();
-                        if (vocabName != null && !vocabMap.containsKey(vocabName)) {
-                            Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
-                            if (vocab != null) {
-                                VocabularyManager.getAllRecords(vocab);
-                                vocabMap.put(vocabName, vocab);
+                        for (Mapping mapping : gm.getMappings()) {
+                            String vocabName = mapping.getSourceVocabulary();
+                            if (vocabName != null && !vocabMap.containsKey(vocabName)) {
+                                Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
+                                if (vocab != null) {
+                                    VocabularyManager.getAllRecords(vocab);
+                                    vocabMap.put(vocabName, vocab);
+                                }
                             }
                         }
                     }
@@ -169,20 +171,20 @@ public class Handlers {
                             }
                         }
                         for (FieldValue fv : field.getValues()) {
-                            GroupValue groupValue = fv.getGroupValue();
-                            Map<String, String> vocabNameToMdt = field.getGroupMappings()
-                                    .stream()
-                                    .filter(gm -> gm.getSourceVocabulary().equals(groupValue.getSourceVocabulary()))
-                                    .flatMap(gm -> gm.getMappings().stream())
-                                    .collect(Collectors.toMap(Mapping::getVocabularyName, Mapping::getMetadataType));
-                            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupValue.getGroupName());
-                            MetadataGroup newGroup = new MetadataGroup(mdgt);
-                            for (String vocabName : groupValue.getValues().keySet()) {
-                                MetadataType mdt = prefs.getMetadataTypeByName(vocabNameToMdt.get(vocabName));
-                                Metadata metadata = new Metadata(mdt);
-                                newGroup.addMetadata(metadata);
-                            }
-                            ds.addMetadataGroup(newGroup);
+                            //                            GroupValue groupValue = fv.getGroupValue();
+                            //                            Map<String, String> vocabNameToMdt = field.getGroupMappings()
+                            //                                    .stream()
+                            //                                    .filter(gm -> gm.getSourceVocabulary().equals(groupValue.getSourceVocabulary()))
+                            //                                    .flatMap(gm -> gm.getMappings().stream())
+                            //                                    .collect(Collectors.toMap(Mapping::getVocabularyName, Mapping::getMetadataType));
+                            //                            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupValue.getGroupName());
+                            //                            MetadataGroup newGroup = new MetadataGroup(mdgt);
+                            //                            for (String vocabName : groupValue.getValues().keySet()) {
+                            //                                MetadataType mdt = prefs.getMetadataTypeByName(vocabNameToMdt.get(vocabName));
+                            //                                Metadata metadata = new Metadata(mdt);
+                            //                                newGroup.addMetadata(metadata);
+                            //                            }
+                            //                            ds.addMetadataGroup(newGroup);
                         }
                     } else {
                         String fieldMdt = field.getMetadatatype();
@@ -259,7 +261,7 @@ public class Handlers {
                                         values.put(vocabName.get(), md.getValue());
                                     }
                                 }
-                                GroupValue groupValue = new GroupValue(gm.getGroupName(), gm.getSourceVocabulary(), values);
+                                GroupValue groupValue = new GroupValue(gm.getGroupName(), values);
                                 field.getValues().add(new FieldValue(null, groupValue));
                             }
                         }

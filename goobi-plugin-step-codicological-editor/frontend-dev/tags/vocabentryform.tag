@@ -71,6 +71,7 @@
 <script>
 export default {
     onBeforeMount(state, props) {
+    	console.log(this.props)
     	this.state = {
     		struct: {},
     		fields: []
