@@ -36,7 +36,7 @@
                 <Provenanceentry 
                     each={value in field.values} 
                     field={field} 
-                    value={value.groupValue} 
+                    groupValue={value.groupValue} 
                     msg={props.msg}
                     deleteValue={getDeleteValueFromFieldFunction(field, idx)} />
             </template>
@@ -168,6 +168,7 @@
 	        this.update();
 	    },
 	    valuesChanged() {
+	    	console.log(this.state.provenanceField);
 	    	this.update();
 	    },
 	    getDeleteValueFromFieldFunction(field, valueIndex) {

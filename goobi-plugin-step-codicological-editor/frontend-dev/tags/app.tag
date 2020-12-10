@@ -18,7 +18,7 @@
 		<div class="col-md-6">
 			<button class="btn btn-primary" onclick={showPreview}><i class="fa-btn fa fa-desktop"></i>{msg('plugin_codicological_showPreview')}</button>
 			<div class="pull-right">
-				<button class="btn" onclick={save}><i class="fa fa-floppy-o"></i>{msg('save')}</button>
+				<button class="btn" onclick={save}><i class="fa-btn fa fa-floppy-o"></i>{msg('save')}</button>
 				<button class="btn btn-success" style="margin-left: 15px;" onclick={saveAndExit}><i class="fa-btn fa fa-floppy-o"></i>{msg('plugin_codicological_saveAndExit')}</button>
 			</div>
 		</div>

@@ -58,6 +58,7 @@
                     </tbody>
                 </table>
             </template>
+            <button class="btn btn-primary pull-right" onclick={addEntry}>Provenienz hinzufügen</button>
         </div>
     </div>
 </div>
@@ -150,8 +151,14 @@ export default {
 		this.state.searchTerms[mapping.sourceVocabulary] = "";
 		this.update();
 	},
-	entryCreated(entry) {
-		console.log("modal:", entry)
+	addEntry() {
+		this.props.field.values.push({
+			groupValue: {values: this.state.result},
+			groupName: this.props.field.groupMappings[0].groupName
+		});
+		//console.log(this.props.valuesChanged, this.props.hide)
+		this.props.valuesChanged();
+		this.props.hide();
 	},
 	valueOrEmpty(fields, label) {
 		let field = fields.find(v => v.label == label);

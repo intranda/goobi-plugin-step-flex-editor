@@ -1,6 +1,6 @@
 <provenanceentry>
     <div class="provenance-entry">
-        Provenienz: {props.value.type}
+        Provenienz: {props.groupValue.type}
         <div class="action">
             <a onclick={deleteProvenance}>
               <i class="fa fa-minus-circle"></i>
@@ -8,14 +8,14 @@
         </div>
         
     </div>
-    <div class="field-detail" each={key in Object.keys(props.value.values)} if={key != 'type'}>
+    <div class="field-detail" each={key in Object.keys(props.groupValue.values)} if={key != 'type'}>
         <div class="field-label">
             <div class="label-text">
                 {key}
             </div>
         </div>
         <div class="value">
-            <input class="form-control" disabled value={props.value.values[key]}></input>
+            <input class="form-control" disabled value={props.groupValue.values[key]}></input>
         </div>
     </div>
     
