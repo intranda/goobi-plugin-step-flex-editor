@@ -97,6 +97,7 @@
 
 <script>
 import Vocabentryform from './vocabentryform.tag'
+import {recordMainValue} from '../vocabulary_util.js'
 export default {
 	components: {
     	Vocabentryform
@@ -168,11 +169,8 @@ export default {
 		return "";
 	},
 	recordMainValue(record, vocabName) {
-		if(!record) {
-			return "";
-		}
-		let mainEntryLabel = this.props.vocabularies[vocabName].struct.find(s => s.mainEntry).label
-		return record.fields.find(f => f.label == mainEntryLabel).value
+		let vocabulary = this.props.vocabularies[vocabName];
+		return recordMainValue(record, vocabulary);
 	}
 }
 

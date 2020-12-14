@@ -37,6 +37,7 @@
                     each={value in field.values} 
                     field={field} 
                     groupValue={value.groupValue} 
+                    vocabularies={props.vocabularies}
                     msg={props.msg}
                     deleteValue={getDeleteValueFromFieldFunction(field, idx)} />
             </template>

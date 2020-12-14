@@ -15,7 +15,7 @@
             </div>
         </div>
         <div class="value">
-            <input class="form-control" disabled value={props.groupValue.values[key]}></input>
+            <input class="form-control" disabled value={mainEntryForGroupValue(key, props.groupValue.values[key])}></input>
         </div>
     </div>
     
@@ -49,6 +49,7 @@
     </style>
     
     <script>
+    	import {vocabularyForMetadataType, recordMainValue} from '../vocabulary_util.js'
     	export default {
     		onBeforeMount() {
     			console.log(this.props)
@@ -58,6 +59,12 @@
     		},
     		msg(key) {
 				return this.props.msg(key);
+			},
+			mainEntryForGroupValue(groupValueType, groupValue) {
+				console.log(this.props.field)
+				let mappings = this.props.field.groupMappings[0].mappings;
+				let vocabulary = vocabularyForMetadataType(mappings, groupValueType, this.props.vocabularies);
+				return recordMainValue(groupValue, vocabulary);
 			}
     	}
     </script>
