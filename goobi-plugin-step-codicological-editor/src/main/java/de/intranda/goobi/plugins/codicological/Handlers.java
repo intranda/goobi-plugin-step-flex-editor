@@ -91,6 +91,22 @@ public class Handlers {
         return vocabMap;
     };
 
+    public static Route getMetsTranslations = (req, res) -> {
+        int processId = Integer.parseInt(req.params("processid"));
+        String language = req.params("language");
+        Map<String, String> translationMap = new HashMap<>();
+
+        Process process = ProcessManager.getProcessById(processId);
+        Prefs prefs = process.getRegelsatz().getPreferences();
+        for (MetadataType mdt : prefs.getAllMetadataTypes()) {
+            if (mdt.getAllLanguages() != null) {
+                translationMap.put(mdt.getName(), mdt.getNameByLanguage(language));
+            }
+        }
+
+        return translationMap;
+    };
+
     public static Route getMetadata = (req, res) -> {
         XMLConfiguration conf = ConfigPlugins.getPluginConfig(CodicologicalEditor.title);
         List<Column> colList = readColsFromConfig(conf);

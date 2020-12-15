@@ -8,51 +8,65 @@
         <div class="box-content">
             <template each={group in props.field.groupMappings}>
                 <template each={mapping in group.mappings}>
-                    <div class="form-group">
-                      <label for="search{mapping.sourceVocabulary}">{mapping.sourceVocabulary} durchsuchen</label>
-                      <input 
-                        type="input" 
-                        class="form-control" 
-                        id="search{mapping.sourceVocabulary}" 
-                        placeholder="{mapping.sourceVocabulary} durchsuchen" 
-                        value={state.searchTerms[mapping.sourceVocabulary]}
-                        onkeyup={(e) => filterVocabulary(mapping.sourceVocabulary, e)}>
-                    </div>
-                    <table class="table" if={state.filteredVocabs[mapping.sourceVocabulary] && state.filteredVocabs[mapping.sourceVocabulary].length != 0}>
-                        <thead>
-                            <tr>
-                                <th each={field in props.vocabularies[mapping.sourceVocabulary].struct}>{field.label}</th>
-                                <th>Aktion</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr each={value in state.filteredVocabs[mapping.sourceVocabulary]}>
-                                <td each={field in props.vocabularies[mapping.sourceVocabulary].struct}>
-                                    {valueOrEmpty(value.fields, field.label)}
-                                </td>
-                                <td><button class="btn btn-primary" onclick={() => addValue(mapping, value)}><i class="fa fa-check"></i></button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <Vocabentryform 
-                        vocabname={mapping.sourceVocabulary} 
-                        vocabularies={props.vocabularies}
-                        entryCreated={entryCreated} 
-                        msg={props.msg}>
-                    </Vocabentryform>
+                    <template if={!mapping.sourceVocabulary}>
+                        <div class="form-group">
+                          <label for="input{mapping.metadataType}">{msg('ruleset_' + mapping.metadataType)}</label>
+                          <input 
+                            type="input" 
+                            class="form-control" 
+                            id="input{mapping.metadataType}" 
+                            placeholder="{msg('ruleset_' + mapping.metadataType)}" 
+                            value={state.result[mapping.metadataType]}
+                            onkeyup={(e) => updateResult(mapping.metadataType, e)}>
+                        </div>
+                    </template>
+                    <template if={mapping.sourceVocabulary}>
+                        <div class="form-group">
+                          <label for="search{mapping.sourceVocabulary}">{mapping.sourceVocabulary} durchsuchen</label>
+                          <input 
+                            type="input" 
+                            class="form-control" 
+                            id="search{mapping.sourceVocabulary}" 
+                            placeholder="{mapping.sourceVocabulary} durchsuchen" 
+                            value={state.searchTerms[mapping.sourceVocabulary]}
+                            onkeyup={(e) => filterVocabulary(mapping.sourceVocabulary, e)}>
+                        </div>
+                        <table class="table" if={state.filteredVocabs[mapping.sourceVocabulary] && state.filteredVocabs[mapping.sourceVocabulary].length != 0}>
+                            <thead>
+                                <tr>
+                                    <th each={field in props.vocabularies[mapping.sourceVocabulary].struct}>{field.label}</th>
+                                    <th>Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr each={value in state.filteredVocabs[mapping.sourceVocabulary]}>
+                                    <td each={field in props.vocabularies[mapping.sourceVocabulary].struct}>
+                                        {valueOrEmpty(value.fields, field.label)}
+                                    </td>
+                                    <td><button class="btn btn-primary" onclick={() => addValue(mapping, value)}><i class="fa fa-check"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <Vocabentryform 
+                            vocabname={mapping.sourceVocabulary} 
+                            vocabularies={props.vocabularies}
+                            entryCreated={entryCreated} 
+                            msg={props.msg}>
+                        </Vocabentryform>
+                    </template>
                 </template>
                 <table class="table">
                     <thead>
                         <tr>
                             <th each={mapping in group.mappings}>
-                                {mapping.metadataType}
+                                {msg('ruleset_' + mapping.metadataType)}
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td each={mapping in group.mappings}>
-                                {recordMainValue(state.result[mapping.metadataType], mapping.sourceVocabulary)}
+                                {state.result[mapping.metadataType]}
                             </td>
                         </tr>
                     </tbody>
@@ -147,9 +161,13 @@ export default {
 		this.update();
 	},
 	addValue(mapping, value) {
-		this.state.result[mapping.metadataType] = value;
+		this.state.result[mapping.metadataType] = this.recordMainValue(value, mapping.sourceVocabulary);
 		this.state.filteredVocabs[mapping.sourceVocabulary] = null;
 		this.state.searchTerms[mapping.sourceVocabulary] = "";
+		this.update();
+	},
+	updateResult(metadataType, event) {
+		this.state.result[metadataType] = event.target.value;
 		this.update();
 	},
 	addEntry() {
@@ -169,8 +187,11 @@ export default {
 		return "";
 	},
 	recordMainValue(record, vocabName) {
-		let vocabulary = this.props.vocabularies[vocabName];
-		return recordMainValue(record, vocabulary);
+		if(vocabName) {
+    		let vocabulary = this.props.vocabularies[vocabName];
+    		return recordMainValue(record, vocabulary);
+		}
+		return record;
 	}
 }
 

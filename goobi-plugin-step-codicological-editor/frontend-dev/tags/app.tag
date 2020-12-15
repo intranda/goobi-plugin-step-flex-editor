@@ -96,7 +96,19 @@
           credentials: 'same-origin'
       }).then(resp => {
         resp.json().then(json => {
-          this.state.msgs = json;
+          this.state.msgs = {...this.state.msgs, ...json};
+          this.update();
+        });
+      });
+      console.log(props)
+      fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/ruleset/messages/${props.goobi_opts.language}`, {
+          method: 'GET',
+          credentials: 'same-origin'
+      }).then(resp => {
+        resp.json().then(json => {
+          for(let key of Object.keys(json)) {
+            this.state.msgs["ruleset_" + key] = json[key];
+          }
           this.update();
         });
       });
