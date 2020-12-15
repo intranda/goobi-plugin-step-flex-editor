@@ -11,15 +11,32 @@
     <div class="field-detail" each={key in Object.keys(props.groupValue.values)} if={key != 'type'}>
         <div class="field-label">
             <div class="label-text">
-                {key}
+                {msg('ruleset_' + key)}
             </div>
         </div>
-        <div class="value">
-            <input class="form-control" disabled value={props.groupValue.values[key]}></input>
+        <div class="value" style="position: relative;">
+            <input class="form-control" disabled value={props.groupValue.values[key]} 
+                onmouseover={() => showPopover(key)} 
+                onmouseout={() => hidePopover(key)}></input>
+            <div
+                class="popover fade top in {key}" 
+                style="{state.showPopover[key] ? 'display: block;' : ''} top: {state.popoverTop}px;">
+                <table>
+                    <tbody>
+                        <tr each={recordField in recordFromMainEntry(props.groupValue.values[key], key).fields}>
+                            <td>{recordField.label}</td>
+                            <td>{recordField.value}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
     <style>
+        .popover td {
+            padding: 5px;
+        }
         .form-control[disabled] {
             background-color: #fafafa
         }
@@ -52,6 +69,11 @@
     	import {vocabularyForMetadataType, recordMainValue} from '../vocabulary_util.js'
     	export default {
     		onBeforeMount() {
+    			this.state = {
+    					showPopover: {}
+        			}
+    		},
+    		onMount() {
     		},
     		deleteProvenance() {
     			this.props.deleteValue();
@@ -66,6 +88,26 @@
 					return recordMainValue(groupValue, vocabulary);
 				}
 				return groupValue;
+			},
+			recordFromMainEntry(mainEntry, metadatatype) {
+				let mappings = this.props.field.groupMappings[0].mappings;
+				let vocabulary = vocabularyForMetadataType(mappings, metadatatype, this.props.vocabularies);
+				if(!vocabulary) {
+					return {fields: []};
+				}
+				let mainEntryLabel = vocabulary.struct.find(str => str.mainEntry).label;
+				let record = vocabulary.records.find(record => record.fields.filter(field => field.label == mainEntryLabel && field.value == mainEntry).length>0);
+				return record;
+			},
+			showPopover(key) {
+				this.state.showPopover[key] = true;
+				this.update();
+				this.state.popoverTop = -this.$('.popover.' + key).clientHeight + 15;
+				this.update();
+			},
+			hidePopover(key) {
+				this.state.showPopover[key] = false;
+				this.update();
 			}
     	}
     </script>
