@@ -187,20 +187,20 @@ public class Handlers {
                             }
                         }
                         for (FieldValue fv : field.getValues()) {
-                            //                            GroupValue groupValue = fv.getGroupValue();
-                            //                            Map<String, String> vocabNameToMdt = field.getGroupMappings()
-                            //                                    .stream()
-                            //                                    .filter(gm -> gm.getSourceVocabulary().equals(groupValue.getSourceVocabulary()))
-                            //                                    .flatMap(gm -> gm.getMappings().stream())
-                            //                                    .collect(Collectors.toMap(Mapping::getVocabularyName, Mapping::getMetadataType));
-                            //                            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupValue.getGroupName());
-                            //                            MetadataGroup newGroup = new MetadataGroup(mdgt);
-                            //                            for (String vocabName : groupValue.getValues().keySet()) {
-                            //                                MetadataType mdt = prefs.getMetadataTypeByName(vocabNameToMdt.get(vocabName));
-                            //                                Metadata metadata = new Metadata(mdt);
-                            //                                newGroup.addMetadata(metadata);
-                            //                            }
-                            //                            ds.addMetadataGroup(newGroup);
+                            GroupValue groupValue = fv.getGroupValue();
+                            System.out.println(groupValue.getGroupName());
+                            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupValue.getGroupName());
+                            MetadataGroup newGroup = new MetadataGroup(mdgt);
+                            for (String metadataTypeName : groupValue.getValues().keySet()) {
+                                for (Metadata groupMd : newGroup.getMetadataList()) {
+                                    if (groupMd.getType().getName().equals(metadataTypeName)) {
+                                        String authorityValue = groupValue.getValues().get(metadataTypeName);
+                                        groupMd.setAutorityFile("", "", authorityValue);
+                                        groupMd.setValue(groupValue.getValues().get(metadataTypeName));
+                                    }
+                                }
+                            }
+                            ds.addMetadataGroup(newGroup);
                         }
                     } else {
                         String fieldMdt = field.getMetadatatype();
@@ -281,7 +281,9 @@ public class Handlers {
                                 field.getValues().add(new FieldValue(null, groupValue));
                             }
                         }
-
+                        if (field.getValues().size() > 0) {
+                            field.setShow(true);
+                        }
                     } else {
                         String fieldMdt = field.getMetadatatype();
                         if (fieldMdt == null || "unknown".equals(fieldMdt)) {

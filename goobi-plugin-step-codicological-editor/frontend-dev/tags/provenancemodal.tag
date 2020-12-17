@@ -172,8 +172,10 @@ export default {
 	},
 	addEntry() {
 		this.props.field.values.push({
-			groupValue: {values: this.state.result},
-			groupName: this.props.field.groupMappings[0].groupName
+			groupValue: {
+				values: this.state.result,
+				groupName: this.props.field.groupMappings[0].groupName	
+			}
 		});
 		//console.log(this.props.valuesChanged, this.props.hide)
 		this.props.valuesChanged();
