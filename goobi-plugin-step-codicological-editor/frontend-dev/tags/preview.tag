@@ -11,17 +11,26 @@
 					<tr each={ item in state.values}>
 						<th>{item.name}</th>
 						<td>
-                            <template if={item.values.length == 1}>{item.values[0].value}</template>
-                            <ul if={item.values.length != 1}>
-                                <li each={value in item.values}>
+                            <!-- <template if={item.values.length == 1}>{item.values[0].value}</template>-->
+                            <ul >
+                                <li each={(value, idx) in item.values}>
                                     <template if={typeof value === 'string'}>
                                         {value}
                                     </template>
                                     <template if={typeof value !== 'string'}>
                                         {value.value}
                                     </template>
+                                    <template if={typeof value !== 'string' && value.groupValue}>
+                                        <ul each={mdType in Object.keys(value.groupValue.values)}>
+                                            <li>
+                                                {props.msg("ruleset_" + mdType)}: {value.groupValue.values[mdType]}
+                                            </li> 
+                                        </ul>
+                                        <template if={idx != item.values.length-1}>--</template>
+                                    </template>
                                 </li>
                             </ul>
+                            
                         </td>
 					</tr>
 					</tbody>
