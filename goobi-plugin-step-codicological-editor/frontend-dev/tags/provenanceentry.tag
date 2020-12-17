@@ -76,6 +76,7 @@
     		onMount() {
     		},
     		deleteProvenance() {
+    			console.log("deleting me");
     			this.props.deleteValue();
     		},
     		msg(key) {

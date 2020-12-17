@@ -14,7 +14,12 @@
                             <template if={item.values.length == 1}>{item.values[0].value}</template>
                             <ul if={item.values.length != 1}>
                                 <li each={value in item.values}>
-                                    {value}
+                                    <template if={typeof value === 'string'}>
+                                        {value}
+                                    </template>
+                                    <template if={typeof value !== 'string'}>
+                                        {value.value}
+                                    </template>
                                 </li>
                             </ul>
                         </td>
@@ -75,6 +80,7 @@
 			},
 			onMounted() {
 				this.state.values = this.props.values
+				console.log(this.state.values);
 				this.update();
 		    },
 		    onBeforeUnmount() {

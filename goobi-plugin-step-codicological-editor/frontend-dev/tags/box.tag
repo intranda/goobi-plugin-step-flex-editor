@@ -34,12 +34,12 @@
 			</div>
             <template each={(field, idx) in props.box.fields} if={field.show && field.type == "MODAL_PROVENANCE"}>
                 <Provenanceentry 
-                    each={value in field.values} 
+                    each={(value, groupIdx) in field.values} 
                     field={field} 
                     groupValue={value.groupValue} 
                     vocabularies={props.vocabularies}
                     msg={props.msg}
-                    deleteValue={getDeleteValueFromFieldFunction(field, idx)} />
+                    deleteValue={getDeleteValueFromFieldFunction(field, groupIdx)} />
             </template>
 		</div>
 	</div>
@@ -174,6 +174,7 @@
 	    },
 	    getDeleteValueFromFieldFunction(field, valueIndex) {
 	    	return () => {
+	    		console.log("deleting:", field.values, valueIndex)
 	    		field.values.splice(valueIndex, 1);
 	    		this.update();
 	    	}
