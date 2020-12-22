@@ -15,13 +15,14 @@
             </div>
         </div>
         <div class="value" style="position: relative;">
-            <input class="form-control" disabled value={props.groupValue.values[key]} 
-                onmouseover={() => showPopover(key)} 
-                onmouseout={() => hidePopover(key)}></input>
+            <span onmouseover={() => showPopover(key)} onmouseout={() => hidePopover(key)}>
+                <input class="form-control" disabled value={props.groupValue.values[key]}></input>
+            </span>
             <div
                 class="popover fade top in {key}" 
                 style="{state.showPopover[key] ? 'display: block;' : ''} top: {state.popoverTop}px;">
-                <table>
+                <table class="table">
+                    <thead></thead>
                     <tbody>
                         <tr each={recordField in recordFromMainEntry(props.groupValue.values[key], key).fields}>
                             <td>{recordField.label}</td>
@@ -63,6 +64,9 @@
         .action a:hover {
             color: #9E9E9E;
         }
+        .popover {
+            border-color: #E8860C !important;
+        }
     </style>
     
     <script>
@@ -101,6 +105,9 @@
 				return record;
 			},
 			showPopover(key) {
+				if(this.recordFromMainEntry(this.props.groupValue.values[key], key).fields.length==0) {
+					return;
+				}
 				this.state.showPopover[key] = true;
 				this.update();
 				this.state.popoverTop = -this.$('.popover.' + key).clientHeight + 15;

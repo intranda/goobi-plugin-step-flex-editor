@@ -39,9 +39,9 @@
         flex-wrap: wrap;
         max-width: 100%;
         border: 1px solid #ccc;
-        padding: 5px;
-        padding-top: 10px;
-        padding-bottom: 0px;
+        padding: 10px;
+        padding-top: 15px;
+        padding-bottom: 5px;
    }
    .vocabentryform .form-group {
         width: 50%;

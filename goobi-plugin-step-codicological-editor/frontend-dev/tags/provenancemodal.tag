@@ -55,7 +55,7 @@
                         </Vocabentryform>
                     </template>
                 </template>
-                <table class="table">
+                <table class="table result-table" if={anyResults()}>
                     <thead>
                         <tr>
                             <th each={mapping in group.mappings}>
@@ -72,7 +72,8 @@
                     </tbody>
                 </table>
             </template>
-            <button class="btn btn-primary pull-right" onclick={addEntry}>Provenienz hinzufügen</button>
+            <!--  TODO: margin hier -->
+            <button class="btn btn-primary pull-right confirm-button" onclick={addEntry}>Provenienz hinzufügen</button>
         </div>
     </div>
 </div>
@@ -106,6 +107,15 @@
     .my-modal-bg .box .box-content {
         max-height: 90vh;
         overflow-y: auto;
+    }
+    .table {
+        border: 1px solid #ddd;
+    }
+    .box.box-bordered .table {
+        margin-bottom: 15px;
+    }
+    .confirm-button {
+        margin-bottom: 10px;
     }
 </style>
 
@@ -180,6 +190,9 @@ export default {
 		//console.log(this.props.valuesChanged, this.props.hide)
 		this.props.valuesChanged();
 		this.props.hide();
+	},
+	anyResults() {
+		return Object.values(this.state.result).filter(val => !!val).length > 0;
 	},
 	valueOrEmpty(fields, label) {
 		let field = fields.find(v => v.label == label);
