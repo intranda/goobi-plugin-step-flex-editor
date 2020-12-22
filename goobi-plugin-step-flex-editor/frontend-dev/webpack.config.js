@@ -16,7 +16,7 @@ module.exports = {
           copy: [
             {
               source: '../src/main/resources/frontend/**', 
-              destination: '/opt/digiverso/goobi/static_assets/plugins/intranda_step_codicological-editor/'
+              destination: '/opt/digiverso/goobi/static_assets/plugins/intranda_step_flex-editor/'
             }
           ]
         }

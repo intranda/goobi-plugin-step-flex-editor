@@ -27,7 +27,7 @@
 		<fileSet>
             <directory>./src/main/resources/frontend/</directory>
 			<useDefaultExcludes>true</useDefaultExcludes>
-            <outputDirectory>static_assets/plugins/intranda_step_codicological-editor/</outputDirectory>
+            <outputDirectory>static_assets/plugins/intranda_step_flex-editor/</outputDirectory>
             <includes>
                 <include>**</include>
             </includes>
