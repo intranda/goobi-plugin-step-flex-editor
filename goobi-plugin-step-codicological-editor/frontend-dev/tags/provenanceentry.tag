@@ -22,7 +22,6 @@
                 class="popover fade top in {key}" 
                 style="{state.showPopover[key] ? 'display: block;' : ''} top: {state.popoverTop}px;">
                 <table class="table">
-                    <thead></thead>
                     <tbody>
                         <tr each={recordField in recordFromMainEntry(props.groupValue.values[key], key).fields}>
                             <td>{recordField.label}</td>
@@ -66,6 +65,9 @@
         }
         .popover {
             border-color: #E8860C !important;
+        }
+        .table tbody tr:first-child td {
+            border-top: none;
         }
     </style>
     
