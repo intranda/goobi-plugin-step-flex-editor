@@ -22,7 +22,7 @@ pipeline {
 
     stage('build') {
       steps {
-        sh 'mvn -f goobi-plugin-step-codicological-editor/pom.xml package'
+        sh 'mvn -f goobi-plugin-step-flex-editor/pom.xml package'
         recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
       }
     }
