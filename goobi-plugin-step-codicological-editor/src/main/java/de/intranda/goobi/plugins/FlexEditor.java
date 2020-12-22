@@ -9,7 +9,7 @@ import org.goobi.production.enums.PluginType;
 import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IRestGuiPlugin;
 
-import de.intranda.goobi.plugins.codicological.Routes;
+import de.intranda.goobi.plugins.flex.Routes;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
@@ -18,10 +18,10 @@ import spark.Service;
 @Data
 @PluginImplementation
 @Log4j2
-public class CodicologicalEditor implements IRestGuiPlugin {
+public class FlexEditor implements IRestGuiPlugin {
     private Step step;
     private String returnPath;
-    public final static String title = "intranda_step_codicological-editor";
+    public final static String title = "intranda_step_flex-editor";
 
     @Override
     public String cancel() {

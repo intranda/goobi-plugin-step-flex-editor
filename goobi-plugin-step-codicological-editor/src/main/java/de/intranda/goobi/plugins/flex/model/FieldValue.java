@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins.codicological.model;
+package de.intranda.goobi.plugins.flex.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

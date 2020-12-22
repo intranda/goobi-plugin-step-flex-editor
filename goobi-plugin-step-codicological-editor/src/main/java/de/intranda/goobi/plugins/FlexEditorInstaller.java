@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
-public class CodicologicalEditorInstaller implements Callable<Integer> {
+public class FlexEditorInstaller implements Callable<Integer> {
 
     @Option(names = { "--install", "-i" }, description = "install this plugin")
     private boolean install;
@@ -24,12 +24,12 @@ public class CodicologicalEditorInstaller implements Callable<Integer> {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            CommandLine cl = new CommandLine(new CodicologicalEditorInstaller());
+            CommandLine cl = new CommandLine(new FlexEditorInstaller());
             cl.usage(System.out);
             System.exit(0);
         }
         try {
-            int exitCode = new CommandLine(new CodicologicalEditorInstaller()).execute(args);
+            int exitCode = new CommandLine(new FlexEditorInstaller()).execute(args);
             System.exit(exitCode);
         } catch (Exception e) {
             e.printStackTrace(System.err);
@@ -44,7 +44,7 @@ public class CodicologicalEditorInstaller implements Callable<Integer> {
             extractAssets(Paths.get(staticAssetsDir));
 
             System.out.println("installing plugin to " + pluginDir);
-            String myJarFile = CodicologicalEditorInstaller.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            String myJarFile = FlexEditorInstaller.class.getProtectionDomain().getCodeSource().getLocation().getPath();
             Path jarPath = Paths.get(myJarFile);
             Files.copy(jarPath, Paths.get(pluginDir, "step", jarPath.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
         }
@@ -59,7 +59,7 @@ public class CodicologicalEditorInstaller implements Callable<Integer> {
     }
 
     public void extractFile(String filePath, Path assetsDir) {
-        Path out = assetsDir.resolve("plugins").resolve(CodicologicalEditor.title).resolve(filePath);
+        Path out = assetsDir.resolve("plugins").resolve(FlexEditor.title).resolve(filePath);
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("frontend/" + filePath)) {
             if (!Files.exists(out.getParent())) {
                 Files.createDirectories(out.getParent());

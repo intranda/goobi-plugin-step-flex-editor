@@ -1,5 +1,5 @@
 {
-  "name": "codicological-editor-frontend",
+  "name": "flex-editor-frontend",
   "version": "1.0.0",
   "description": "JS frontend for metadata editor light",
   "main": "main.js",

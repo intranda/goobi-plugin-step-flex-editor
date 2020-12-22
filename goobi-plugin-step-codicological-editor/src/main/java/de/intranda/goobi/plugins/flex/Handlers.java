@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins.codicological;
+package de.intranda.goobi.plugins.flex;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -27,15 +27,15 @@ import org.goobi.vocabulary.Vocabulary;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import de.intranda.goobi.plugins.CodicologicalEditor;
-import de.intranda.goobi.plugins.codicological.model.Box;
-import de.intranda.goobi.plugins.codicological.model.Column;
-import de.intranda.goobi.plugins.codicological.model.Field;
-import de.intranda.goobi.plugins.codicological.model.FieldValue;
-import de.intranda.goobi.plugins.codicological.model.GroupMapping;
-import de.intranda.goobi.plugins.codicological.model.GroupValue;
-import de.intranda.goobi.plugins.codicological.model.ImagesResponse;
-import de.intranda.goobi.plugins.codicological.model.Mapping;
+import de.intranda.goobi.plugins.FlexEditor;
+import de.intranda.goobi.plugins.flex.model.Box;
+import de.intranda.goobi.plugins.flex.model.Column;
+import de.intranda.goobi.plugins.flex.model.Field;
+import de.intranda.goobi.plugins.flex.model.FieldValue;
+import de.intranda.goobi.plugins.flex.model.GroupMapping;
+import de.intranda.goobi.plugins.flex.model.GroupValue;
+import de.intranda.goobi.plugins.flex.model.ImagesResponse;
+import de.intranda.goobi.plugins.flex.model.Mapping;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -60,7 +60,7 @@ public class Handlers {
     private static Type columnListType = TypeToken.getParameterized(List.class, Column.class).getType();
 
     public static Route allVocabs = (req, res) -> {
-        XMLConfiguration conf = ConfigPlugins.getPluginConfig(CodicologicalEditor.title);
+        XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.title);
         List<Column> colList = readColsFromConfig(conf);
         Map<String, Vocabulary> vocabMap = new TreeMap<>();
         for (Column col : colList) {
@@ -108,7 +108,7 @@ public class Handlers {
     };
 
     public static Route getMetadata = (req, res) -> {
-        XMLConfiguration conf = ConfigPlugins.getPluginConfig(CodicologicalEditor.title);
+        XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.title);
         List<Column> colList = readColsFromConfig(conf);
         mergeMetadata(colList, Integer.parseInt(req.params("processid")));
         return colList;

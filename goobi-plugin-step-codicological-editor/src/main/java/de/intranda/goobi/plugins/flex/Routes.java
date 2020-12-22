@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins.codicological;
+package de.intranda.goobi.plugins.flex;
 
 import com.google.gson.Gson;
 
