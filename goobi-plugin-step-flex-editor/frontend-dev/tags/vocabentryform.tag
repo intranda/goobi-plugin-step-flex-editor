@@ -72,17 +72,22 @@
 export default {
     onBeforeMount(state, props) {
     	console.log(this.props)
-    	this.state = {
+    	this.state = this.getInitialState();
+    	
+    },
+    getInitialState() {
+    	let state = {
     		struct: {},
     		fields: []
     	}
-    	this.state.struct = this.props.vocabularies[this.props.vocabname].struct
-    	for(let entry of this.state.struct) {
-    		this.state.fields.push({
+    	state.struct = this.props.vocabularies[this.props.vocabname].struct
+    	for(let entry of state.struct) {
+    		state.fields.push({
     			label: entry.label,
     			value: ""
     		})
     	}
+    	return state;
     },
     onMounted() {
     	console.log("vocabentry", this.state)
@@ -104,6 +109,7 @@ export default {
     	this.update();
     },
     saveNewEntry() {
+    	console.log("props", this.props)
     	console.log(this.state.struct)
     	fetch(`/goobi/plugins/ce/vocabularies/${this.props.vocabname}/records`, {
     		method: "POST",
@@ -115,7 +121,12 @@ export default {
 				return;
 			}
     		resp.json().then(json => {
-        		this.props.entryCreated(json);
+    			this.toggleExtended();
+    			this.state = this.getInitialState();
+        		this.props.entryCreated({
+        			vocabName: this.props.vocabname,
+        			record: json
+        		});
     		})
     	}).catch(err => {
     		console.log("Error saving vocab entry", err)

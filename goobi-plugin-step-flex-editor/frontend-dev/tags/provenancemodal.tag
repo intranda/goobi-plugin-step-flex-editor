@@ -72,7 +72,6 @@
                     </tbody>
                 </table>
             </template>
-            <!--  TODO: margin hier -->
             <button class="btn btn-primary pull-right confirm-button" onclick={addEntry}>Provenienz hinzufügen</button>
         </div>
     </div>
@@ -207,6 +206,10 @@ export default {
     		return recordMainValue(record, vocabulary);
 		}
 		return record;
+	},
+	entryCreated(entry) {
+		console.log("entry created", entry)
+		this.state.vocabs[entry.vocabName].records.push(entry.record);
 	}
 }
 
