@@ -23,7 +23,7 @@
                                     <template if={typeof value !== 'string' && value.groupValue}>
                                         <ul each={mdType in Object.keys(value.groupValue.values)}>
                                             <li>
-                                                {props.msg("ruleset_" + mdType)}: {value.groupValue.values[mdType]}
+                                                {props.msg("ruleset_" + mdType)}: {mdToTitle(mdType, value.groupValue.values[mdType], item)}
                                             </li> 
                                         </ul>
                                         <template if={idx != item.values.length-1}>--</template>
@@ -82,8 +82,10 @@
         }
 	</style>
 	<script>
+		import {vocabularyForMetadataType, recordMainValue, recordTitle, recordFromMainEntry} from '../vocabulary_util.js'
 		export default {
 			onBeforeMount(state, props) {
+				console.log("preview:", props)
 				this.listenerFunction = this.keyListener.bind(this);
 				document.addEventListener("keyup", this.listenerFunction)
 			},
@@ -99,7 +101,21 @@
 		    	if(e.key == "Escape") {
 		    		this.props.hide();
 		    	}
-		    }
+		    },
+			mdToTitle(mdType, mainEntry, item) {
+				console.log(mdType, mainEntry, item.groupMappings);
+				let mappings = item.groupMappings[0].mappings;
+				let vocabulary = vocabularyForMetadataType(mappings, mdType, this.props.vocabularies);
+				if(!vocabulary) {
+					return mainEntry;
+				}
+				let record = recordFromMainEntry(mainEntry, mdType, item.groupMappings, vocabulary);
+				let title = recordTitle(record, vocabulary);
+				if(title.length == 0) {
+					return mainEntry;
+				}
+				return title;
+			}
 		}
 	</script>
 </preview>

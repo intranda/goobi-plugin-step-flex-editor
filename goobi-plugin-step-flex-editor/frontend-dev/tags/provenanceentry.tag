@@ -72,7 +72,7 @@
     </style>
     
     <script>
-    	import {vocabularyForMetadataType, recordMainValue} from '../vocabulary_util.js'
+    	import {vocabularyForMetadataType, recordMainValue, recordFromMainEntry} from '../vocabulary_util.js'
     	export default {
     		onBeforeMount() {
     			this.state = {
@@ -102,9 +102,7 @@
 				if(!vocabulary) {
 					return {fields: []};
 				}
-				let mainEntryLabel = vocabulary.struct.find(str => str.mainEntry).label;
-				let record = vocabulary.records.find(record => record.fields.filter(field => field.label == mainEntryLabel && field.value == mainEntry).length>0);
-				return record;
+				return recordFromMainEntry(mainEntry, metadatatype, this.props.field.groupMappings, vocabulary)
 			},
 			showPopover(key) {
 				if(this.recordFromMainEntry(this.props.groupValue.values[key], key).fields.length==0) {

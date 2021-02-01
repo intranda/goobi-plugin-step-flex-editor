@@ -23,7 +23,7 @@
 			</div>
 		</div>
 	</div>
-	<Preview if={state.showPreview} values={ state.previewVals } hide={hidePreview} msg={msg}/>
+	<Preview if={state.showPreview} values={ state.previewVals } hide={hidePreview} msg={msg} vocabularies={state.vocabularies}/>
 	<Imagemodal 
 		if={state.showImages} 
 		processId={props.goobi_opts.processId} 
