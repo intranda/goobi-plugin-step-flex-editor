@@ -96,8 +96,8 @@
 		padding-right: 10px;
 	}
 	.my-modal-bg .box {
-		min-width: 50vw;
-        max-width: 50vw;
+		min-width: 85vw;
+        max-width: 85vw;
 	}
 	.my-modal-bg .box .box-title {
 		color: white;
@@ -158,6 +158,11 @@ export default {
 	},
 	filterVocabulary(vocabularyName, e) {
 		let term = e.target.value.toLowerCase();
+		if(term == "*") {
+			this.state.filteredVocabs[vocabularyName] = this.state.vocabs[vocabularyName].records;
+			this.update();
+			return;
+		}
 		if(term.length < 3 || !this.state.vocabs[vocabularyName]) {
 			this.state.filteredVocabs[vocabularyName] = null;
 			this.update();
