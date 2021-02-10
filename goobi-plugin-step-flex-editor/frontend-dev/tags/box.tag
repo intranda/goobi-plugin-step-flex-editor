@@ -6,8 +6,8 @@
 			</h3>
 		</div>
 		<div class="box-content nopadding">
-			<div class="box-content-top" if={ state.filteredFields.length > 0}>
-				<div class="inner-addon right-addon" if={props.box.fields.filter( field => !field.show ).length > 7}>
+			<div class="box-content-top" if={ state.filteredFields.length > 0 || state.search.length > 0}>
+				<div class="inner-addon right-addon" if={props.box.fields.filter( field => !field.show ).length > 7 || state.search.length > 0}>
 					<i class="fa fa-search"></i>
 					<input type="text" class="form-control" onkeyup={filter} placeholder="Filter">
 					</input>
@@ -156,6 +156,7 @@
 	    },
 	    filter(e) {
 	        this.state.search = e.target.value.toLowerCase();
+	        console.log(this.state.search.length);
 	        this.filterFields();
 	    },
 	    filterFields() {
