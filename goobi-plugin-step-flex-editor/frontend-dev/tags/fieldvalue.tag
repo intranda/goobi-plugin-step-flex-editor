@@ -2,7 +2,7 @@
     <span class="text-danger error" if={state.vocabError}>{state.vocabError}</template>
     <template if={!state.vocabError && fieldPrepared()}>
     	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'} value={props.field.values[0].value}></input>
-    	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} >{props.field.values[0].value}</textarea>
+    	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} rows="1" >{props.field.values[0].value}</textarea>
     	<input type="checkbox" onchange={changeValue} checked={checkBoxChecked(props.field.values)} if={props.field.type == 'BOOLEAN'}></input>
     	<label class="select" if={props.field.type == 'DROPDOWN'}>
     		<select class="form-control" onchange={changeValue}>
@@ -101,8 +101,9 @@
         .error {
             padding: 2px;
         }
-        textarea {
+        textarea.form-control {
             resize: vertical;
+            height: 25px;
         }
 	</style>
 	<script>
