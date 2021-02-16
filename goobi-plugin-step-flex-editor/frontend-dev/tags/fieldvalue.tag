@@ -6,10 +6,13 @@
     	<input type="checkbox" onchange={changeValue} checked={checkBoxChecked(props.field.values)} if={props.field.type == 'BOOLEAN'}></input>
     	<label class="select" if={props.field.type == 'DROPDOWN'}>
     		<select class="form-control" onchange={changeValue}>
+                <option data-placeholder="true">
+                    {props.field.name} - auswählen
+                </option>
     			<option 
                     each={record in state.vocab.records} 
                     value="{record.fields[state.vocabFieldIdx].value}" 
-                    selected={record.fields[state.vocabFieldIdx].value == props.field.values[0].value}>
+                    selected={props.field.values.length != 0 && record.fields[state.vocabFieldIdx].value == props.field.values[0].value}>
                     {record.fields[state.vocabFieldIdx].value}
                 </option>
     		</select>
@@ -48,6 +51,7 @@
 		}
 		.multiselect .form-control .multiselect-label {
 			flex-grow: 1;
+            overflow: hidden;
 		}
 		.multiselect .multiselect-options {
 			position: absolute;
@@ -158,9 +162,6 @@
 		            	}
 		                break;
 		            case "DROPDOWN":
-		            	if(field.values.length == 0) {
-		                	field.values[0] = {value: this.state.vocab.records[0].fields[this.state.vocabFieldIdx].value};
-		            	}
 		                break;
 		            case "MULTISELECT":
 		                break;
@@ -169,7 +170,7 @@
 		    },
 		    fieldPrepared() {
 		    	var field = this.props.field;
-		    	return field.values.length > 0 || field.type == "MULTISELECT"; 
+		    	return field.values.length > 0 || field.type == "MULTISELECT" || field.type == "DROPDOWN"; 
 		    },
 		    closeMulti(e) {
 		        if(this.state.multiExpanded) {
@@ -212,7 +213,11 @@
 		            case "DROPDOWN":
 		                for(var option of e.target.options) {
 		                    if(option.selected) {
-			                	field.values[0].value = option.value;
+		                    	if(option.dataset.placeholder != "true") {
+		                    		field.values = [];
+		                    	} else {
+		                    		field.values[0] = {value: option.value};
+		                    	}
 		                    }
 		                }
 		                break;
