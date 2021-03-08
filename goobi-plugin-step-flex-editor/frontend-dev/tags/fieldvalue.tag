@@ -4,19 +4,25 @@
     	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'} value={props.field.values[0].value}></input>
     	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} rows="1" >{props.field.values[0].value}</textarea>
     	<input type="checkbox" onchange={changeValue} checked={checkBoxChecked(props.field.values)} if={props.field.type == 'BOOLEAN'}></input>
-    	<label class="select" if={props.field.type == 'DROPDOWN'}>
-    		<select class="form-control" onchange={changeValue}>
-                <option data-placeholder="true">
-                    {props.field.name} - auswählen
-                </option>
-    			<option 
-                    each={record in state.vocab.records} 
-                    value="{record.fields[state.vocabFieldIdx].value}" 
-                    selected={props.field.values.length != 0 && record.fields[state.vocabFieldIdx].value == props.field.values[0].value}>
-                    {record.fields[state.vocabFieldIdx].value}
-                </option>
-    		</select>
-    	</label>
+    	<div class="select" if={props.field.type == 'DROPDOWN'} onclick={toggleExpandMulti}>
+    		<span class="form-control">
+                <span class="multiselect-label" >
+                    {props.field.values.length > 0 ? props.field.values[0].value : props.field.name + ' - auswählen'}
+                </span>
+    		</span>
+            <div class="multiselect-options" if={state.multiExpanded}>
+                <ul>
+                    <li onclick={ (e) => selectEntry(e, null)}>
+                        {props.field.name + ' - auswählen'}
+                    </li>
+                    <li 
+                        each={record in state.vocab.records} onclick={ (e) => selectEntry(e, record) } 
+                        selected={props.field.values.length != 0 && record.fields[state.vocabFieldIdx].value == props.field.values[0].value}>
+                        {record.fields[state.vocabFieldIdx].value}
+                    </li>
+                </ul>
+            </div>
+    	</div>
     	<div class="multiselect" if={props.field.type == 'MULTISELECT'} onclick={toggleExpandMulti}>
     		<span class="form-control">
     			<span class="multiselect-label">
@@ -53,27 +59,30 @@
 			flex-grow: 1;
             overflow: hidden;
 		}
-		.multiselect .multiselect-options {
+		.multiselect-options {
 			position: absolute;
 			top: 25px;
 			left: 0px;
 			right: 0px;
 			border: 1px solid #ccc;
+            border-top: none;
 			background-color: #fff;
 			z-index: 1; 
+            max-height: 30vh;
+            overflow-y: auto;
 		}
-		.multiselect .multiselect-options ul {
+		.multiselect-options ul {
 			padding-left: 0px;
 			list-style-type: none;
 			margin-bottom: 0px;
 		}
-		.multiselect .multiselect-options ul li {
+		.multiselect-options ul li {
 			padding-left: 12px;
 		}
-		.multiselect .multiselect-options ul li input[type="checkbox"] {
+		.multiselect-options ul li input[type="checkbox"] {
 			margin-right: 5px;
 		}
-		.multiselect .multiselect-options ul li:hover {
+		.multiselect-options ul li:hover {
 			padding-left: 12px;
 			background-color: #3584e4;
 			color: white;
@@ -85,14 +94,10 @@
 		.multiselect .multiselect-values .badge {
 			margin-right: 5px;
 		}
+        
 		.select {
 			position: relative;
 			display: block;
-		}
-		select {
-			-webkit-appearance: none;
-			-moz-appearance: none;
-			appearance: none;       /* Remove default arrow */
 		}
 		.select:after {
 			font-family: FontAwesome;
@@ -102,6 +107,14 @@
 		    color: #000;
 	     z-index: 1;
 		}
+        .select .multiselect-options ul li {
+            cursor: default;
+        }
+        .multiselect-options ul li[selected] {
+            padding-left: 12px;
+            background-color: #3584e4;
+            color: white;
+        }
         .error {
             padding: 2px;
         }
@@ -181,8 +194,18 @@
 		    },
 		    toggleExpandMulti(e) {
 		      e.stopPropagation();
-		      this.state.multiExpanded = !this.state.multiExpanded; 
+		      this.state.multiExpanded = !this.state.multiExpanded;
 		      this.update();
+		      if(this.state.multiExpanded && this.props.field.type == "DROPDOWN") {
+		    	  var selected = this.$('li[selected]');
+		    	  if(selected) {
+		    		// scroll active element into view
+		    		var parent = selected.parentElement.parentElement;
+		    		var offset = selected.offsetTop;
+		    		parent.scrollTop = offset - parent.offsetHeight/2;
+					this.update();
+		    	  }
+		      }
 		    },
 		    toggleEntry(e, record) {
 		        e.stopPropagation();
@@ -195,6 +218,19 @@
 		      	    field.values.splice(idx, 1);
 		      	    this.props.field.values = field.values;
 		      	}
+		      	this.update();
+		    },
+		    selectEntry(e, record) {
+		    	e.stopPropagation();
+		    	var field = this.props.field;
+		    	if(!record) {
+		    		field.values = [];
+		    		
+		    	} else {
+			      	var recordValue = record.fields[this.state.vocabFieldIdx].value;
+		      		field.values = [{value: recordValue}];
+		    	}
+		      	this.state.multiExpanded = false;
 		      	this.update();
 		    },
 		    changeValue(e) {
@@ -211,15 +247,6 @@
 		                this.setTextAreaHeight(e.target, e);
 		                break;
 		            case "DROPDOWN":
-		                for(var option of e.target.options) {
-		                    if(option.selected) {
-		                    	if(option.dataset.placeholder != "true") {
-		                    		field.values = [];
-		                    	} else {
-		                    		field.values[0] = {value: option.value};
-		                    	}
-		                    }
-		                }
 		                break;
 		            case "MULTISELECT":
 		                break;
