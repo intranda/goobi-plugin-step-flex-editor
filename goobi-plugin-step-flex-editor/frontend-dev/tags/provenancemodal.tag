@@ -66,7 +66,7 @@
                     <tbody>
                         <tr>
                             <td each={mapping in group.mappings}>
-                                {state.result[mapping.metadataType]}
+                                {getPrettyVocabValue(mapping, state.result[mapping.metadataType])}
                             </td>
                         </tr>
                     </tbody>
@@ -120,7 +120,7 @@
 
 <script>
 import Vocabentryform from './vocabentryform.tag'
-import {recordMainValue} from '../vocabulary_util.js'
+import {recordMainValue, recordTitle} from '../vocabulary_util.js'
 export default {
 	components: {
     	Vocabentryform
@@ -175,10 +175,22 @@ export default {
 		this.update();
 	},
 	addValue(mapping, value) {
-		this.state.result[mapping.metadataType] = this.recordMainValue(value, mapping.sourceVocabulary);
+		console.log(value)
+		this.state.result[mapping.metadataType] = value.id;
 		this.state.filteredVocabs[mapping.sourceVocabulary] = null;
 		this.state.searchTerms[mapping.sourceVocabulary] = "";
 		this.update();
+	},
+	getPrettyVocabValue(mapping, value) {
+		if(value == undefined) {
+			return undefined;
+		}
+		if(mapping.sourceVocabulary) {
+			let vocabulary = this.state.vocabs[mapping.sourceVocabulary];
+			let record = vocabulary.records.filter(r => r.id == value)[0]
+			return recordTitle(record, vocabulary); 
+		}
+		return value;
 	},
 	updateResult(metadataType, event) {
 		this.state.result[metadataType] = event.target.value;

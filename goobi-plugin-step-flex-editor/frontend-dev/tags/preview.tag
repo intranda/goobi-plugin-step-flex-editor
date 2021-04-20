@@ -102,17 +102,17 @@
 		    		this.props.hide();
 		    	}
 		    },
-			mdToTitle(mdType, mainEntry, item) {
-				console.log(mdType, mainEntry, item.groupMappings);
+			mdToTitle(mdType, id, item) {
+				console.log(mdType, id, item.groupMappings);
 				let mappings = item.groupMappings[0].mappings;
 				let vocabulary = vocabularyForMetadataType(mappings, mdType, this.props.vocabularies);
 				if(!vocabulary) {
-					return mainEntry;
+					return id;
 				}
-				let record = recordFromMainEntry(mainEntry, mdType, item.groupMappings, vocabulary);
+				let record = vocabulary.records.filter(r => r.id == id)[0];
 				let title = recordTitle(record, vocabulary);
 				if(title.length == 0) {
-					return mainEntry;
+					return id;
 				}
 				return title;
 			}

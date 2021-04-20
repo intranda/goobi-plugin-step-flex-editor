@@ -16,14 +16,14 @@
         </div>
         <div class="value" style="position: relative;">
             <span onmouseover={() => showPopover(key)} onmouseout={() => hidePopover(key)}>
-                <input class="form-control" disabled value={props.groupValue.values[key]}></input>
+                <input class="form-control" disabled value={recordTitle(props.groupValue.values[key], key)}></input>
             </span>
             <div
                 class="popover fade top in {key}" 
                 style="{state.showPopover[key] ? 'display: block;' : ''} top: {state.popoverTop}px;">
                 <table class="table">
                     <tbody>
-                        <tr each={recordField in recordFromMainEntry(props.groupValue.values[key], key).fields}>
+                        <tr each={recordField in recordFromId(props.groupValue.values[key], key).fields}>
                             <td>{recordField.label}</td>
                             <td>{recordField.value}</td>
                         </tr>
@@ -72,7 +72,7 @@
     </style>
     
     <script>
-    	import {vocabularyForMetadataType, recordMainValue, recordFromMainEntry} from '../vocabulary_util.js'
+    	import {vocabularyForMetadataType, recordMainValue, recordFromMainEntry, recordTitle} from '../vocabulary_util.js'
     	export default {
     		onBeforeMount() {
     			this.state = {
@@ -96,16 +96,29 @@
 				}
 				return groupValue;
 			},
-			recordFromMainEntry(mainEntry, metadatatype) {
+			recordFromId(id, metadatatype) {
 				let mappings = this.props.field.groupMappings[0].mappings;
 				let vocabulary = vocabularyForMetadataType(mappings, metadatatype, this.props.vocabularies);
 				if(!vocabulary) {
 					return {fields: []};
 				}
-				return recordFromMainEntry(mainEntry, metadatatype, this.props.field.groupMappings, vocabulary)
+				let record = vocabulary.records.filter(r => r.id == id)[0]
+				if(!record) {
+					return {fields: []};
+				}
+				return record;
+			},
+			recordTitle(id, metadatatype) {
+				let mappings = this.props.field.groupMappings[0].mappings;
+				let vocabulary = vocabularyForMetadataType(mappings, metadatatype, this.props.vocabularies);
+				if(!vocabulary) {
+					return id;
+				}
+				let record = vocabulary.records.filter(r => r.id == id)[0]
+				return recordTitle(record, vocabulary);
 			},
 			showPopover(key) {
-				if(this.recordFromMainEntry(this.props.groupValue.values[key], key).fields.length==0) {
+				if(this.recordFromId(this.props.groupValue.values[key], key).fields.length==0) {
 					return;
 				}
 				this.state.showPopover[key] = true;

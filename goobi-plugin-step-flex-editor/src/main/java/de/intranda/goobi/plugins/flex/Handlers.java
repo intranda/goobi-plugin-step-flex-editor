@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.beans.Process;
 import org.goobi.beans.Ruleset;
 import org.goobi.vocabulary.VocabRecord;
@@ -179,6 +180,7 @@ public class Handlers {
                                 .stream()
                                 .map(GroupMapping::getGroupName)
                                 .collect(Collectors.toSet());
+                        Map<String, Mapping> metadataTypeToMappingMap = createMetadataTypeToMappingMap(field);
                         //delete all groups managed by this field
                         for (String groupName : allGroups) {
                             MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupName);
@@ -188,15 +190,27 @@ public class Handlers {
                         }
                         for (FieldValue fv : field.getValues()) {
                             GroupValue groupValue = fv.getGroupValue();
-                            System.out.println(groupValue.getGroupName());
                             MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupValue.getGroupName());
                             MetadataGroup newGroup = new MetadataGroup(mdgt);
                             for (String metadataTypeName : groupValue.getValues().keySet()) {
                                 for (Metadata groupMd : newGroup.getMetadataList()) {
                                     if (groupMd.getType().getName().equals(metadataTypeName)) {
-                                        String authorityValue = groupValue.getValues().get(metadataTypeName);
-                                        groupMd.setAutorityFile("", "", authorityValue);
-                                        groupMd.setValue(groupValue.getValues().get(metadataTypeName));
+                                        // fetch records from vocabulary here and set this as AuthorityFile 
+                                        String metadataValue = groupValue.getValues().get(metadataTypeName);
+                                        Mapping mapping = metadataTypeToMappingMap.get(metadataTypeName);
+                                        if (mapping.getSourceVocabulary() != null) {
+                                            Vocabulary vocab = VocabularyManager.getVocabularyByTitle(mapping.getSourceVocabulary());
+                                            VocabRecord record = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(metadataValue));
+                                            groupMd.setAutorityFile("MPI_GOOBI_VOCABULARY", vocab.getTitle(), metadataValue);
+                                            List<String> titleStrings = record.getFields()
+                                                    .stream()
+                                                    .filter(f -> f.getDefinition().isTitleField())
+                                                    .map(f -> f.getValue())
+                                                    .collect(Collectors.toList());
+                                            groupMd.setValue(StringUtils.join(titleStrings, " "));
+                                        } else {
+                                            groupMd.setValue(metadataValue);
+                                        }
                                     }
                                 }
                             }
@@ -238,6 +252,16 @@ public class Handlers {
         p.writeMetadataFile(ff);
     }
 
+    private static Map<String, Mapping> createMetadataTypeToMappingMap(Field field) {
+        Map<String, Mapping> metadataTypeToMappingMap = new HashMap<String, Mapping>();
+        for (GroupMapping gm : field.getGroupMappings()) {
+            for (Mapping mapping : gm.getMappings()) {
+                metadataTypeToMappingMap.put(mapping.getMetadataType(), mapping);
+            }
+        }
+        return metadataTypeToMappingMap;
+    }
+
     private static void mergeMetadata(List<Column> colList, int processId)
             throws ReadException, PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
         Process p = ProcessManager.getProcessById(processId);
@@ -268,13 +292,17 @@ public class Handlers {
                             if (gm != null) {
                                 Map<String, String> values = new HashMap<String, String>();
                                 for (Metadata md : mdg.getMetadataList()) {
-                                    Optional<String> vocabName = gm.getMappings()
+                                    Optional<Mapping> insideGroupMapping = gm.getMappings()
                                             .stream()
-                                            .map(Mapping::getMetadataType)
-                                            .filter(mdType -> mdType.equals(md.getType().getName()))
+                                            .filter(mapping -> mapping.getMetadataType().equals(md.getType().getName()))
                                             .findAny();
-                                    if (vocabName.isPresent()) {
-                                        values.put(vocabName.get(), md.getValue());
+                                    if (insideGroupMapping.isPresent()) {
+                                        if (!StringUtils.isBlank(insideGroupMapping.get().getSourceVocabulary())) {
+                                            values.put(insideGroupMapping.get().getMetadataType(),
+                                                    md.getAuthorityValue().replace(md.getAuthorityURI(), ""));
+                                        } else {
+                                            values.put(insideGroupMapping.get().getMetadataType(), md.getValue());
+                                        }
                                     }
                                 }
                                 GroupValue groupValue = new GroupValue(gm.getGroupName(), values);
