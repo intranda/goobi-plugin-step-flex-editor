@@ -297,7 +297,8 @@ public class Handlers {
                                             .filter(mapping -> mapping.getMetadataType().equals(md.getType().getName()))
                                             .findAny();
                                     if (insideGroupMapping.isPresent()) {
-                                        if (!StringUtils.isBlank(insideGroupMapping.get().getSourceVocabulary())) {
+                                        if (!StringUtils.isBlank(insideGroupMapping.get().getSourceVocabulary())
+                                                && !StringUtils.isBlank(md.getAuthorityValue())) {
                                             values.put(insideGroupMapping.get().getMetadataType(),
                                                     md.getAuthorityValue().replace(md.getAuthorityURI(), ""));
                                         } else {
