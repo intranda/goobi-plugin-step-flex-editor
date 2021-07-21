@@ -121,5 +121,9 @@
         </configuration>
       </plugin>
     </plugins>
-  </build>
+</build>
+<scm>
+    <url>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-step-flex-editor.git</url>
+    <connection>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-step-flex-editor.git</connection>
+  </scm>
 </project>
