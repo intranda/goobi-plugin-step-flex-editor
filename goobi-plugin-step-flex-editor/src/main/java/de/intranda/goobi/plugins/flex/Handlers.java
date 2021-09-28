@@ -16,6 +16,12 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
@@ -38,6 +44,8 @@ import de.intranda.goobi.plugins.flex.model.GroupValue;
 import de.intranda.goobi.plugins.flex.model.ImagesResponse;
 import de.intranda.goobi.plugins.flex.model.Mapping;
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.config.ConfigurationHelper;
+import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
@@ -201,7 +209,8 @@ public class Handlers {
                                         if (mapping.getSourceVocabulary() != null) {
                                             Vocabulary vocab = VocabularyManager.getVocabularyByTitle(mapping.getSourceVocabulary());
                                             VocabRecord record = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(metadataValue));
-                                            groupMd.setAutorityFile("MPI_GOOBI_VOCABULARY", vocab.getTitle(), metadataValue);
+                                            setAuthorityData(groupMd, vocab, record);
+                                            // groupMd.setAutorityFile("GOOBI_VOCABULARY", vocab.getTitle(), metadataValue);
                                             List<String> titleStrings = record.getFields()
                                                     .stream()
                                                     .filter(f -> f.getDefinition().isTitleField())
@@ -250,6 +259,30 @@ public class Handlers {
             }
         }
         p.writeMetadataFile(ff);
+    }
+
+    private static void setAuthorityData(Metadata groupMd, Vocabulary vocab, VocabRecord record) {
+        if (StringUtils.isNotBlank(ConfigurationHelper.getInstance().getGoobiAuthorityServerUser())
+                && StringUtils.isNotBlank(ConfigurationHelper.getInstance().getGoobiAuthorityServerUrl())) {
+            groupMd.setAutorityFile("GOOBI_VOCABULARY",
+                    ConfigurationHelper.getInstance().getGoobiAuthorityServerUrl(),
+                    ConfigurationHelper.getInstance().getGoobiAuthorityServerUrl()
+                            + ConfigurationHelper.getInstance().getGoobiAuthorityServerUser() + "/vocabularies/"
+                            + record.getVocabularyId() + "/records/" + record.getId());
+        } else {
+            FacesContext context = FacesContextHelper.getCurrentFacesContext();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            String contextPath = request.getContextPath();
+            String scheme = request.getScheme(); // http
+            String serverName = request.getServerName(); // hostname.com
+            int serverPort = request.getServerPort(); // 80
+            String reqUrl = scheme + "://" + serverName + ":" + serverPort + contextPath;
+            Client client = ClientBuilder.newClient();
+            WebTarget base = client.target(reqUrl);
+            WebTarget vocabularyBase = base.path("api").path("vocabulary");
+            groupMd.setAutorityFile(vocab.getTitle(), vocabularyBase.getUri().toString(),
+                    vocabularyBase.getUri() + "/vocabularies/" + record.getVocabularyId() + "/" + record.getId());
+        }
     }
 
     private static Map<String, Mapping> createMetadataTypeToMappingMap(Field field) {
