@@ -3,9 +3,9 @@ package de.intranda.goobi.plugins;
 import java.nio.file.Path;
 import java.util.HashMap;
 
-//import org.goobi.beans.Step;
-//import org.goobi.production.enums.PluginGuiType;
-//import org.goobi.production.enums.PluginType;
+import org.goobi.beans.Step;
+import org.goobi.production.enums.PluginGuiType;
+import org.goobi.production.enums.PluginType;
 import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IRestGuiPlugin;
 
