@@ -1,7 +1,7 @@
 package de.intranda.goobi.plugins;
 
-// import java.nio.file.Path;
-// import java.util.HashMap;
+import java.nio.file.Path;
+import java.util.HashMap;
 
 import org.goobi.beans.Step;
 import org.goobi.production.enums.PluginGuiType;
