@@ -1,41 +1,47 @@
 <preview>
+	<!-- hide is defined in app.tag as hidePreview -->
 	<div class="my-modal-bg" onclick={props.hide}>
 		<div class="box box-color box-bordered" onclick={ e => e.stopPropagation()}>
+			<!-- BOX TITLE -->
 			<div class="box-title">
 				<span>Vorschauansicht</span>
+				<!-- hide is defined in app.tag as hidePreview -->
 				<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
 			</div>
+			<!-- // BOX TITLE -->
+			
+			<!-- BOX CONTENT -->
 			<div class="box-content">
 				<table class="table">
-				<tbody>
-					<tr each={ item in state.values}>
-						<th>{item.name}</th>
-						<td>
-                            <!-- <template if={item.values.length == 1}>{item.values[0].value}</template>-->
-                            <ul >
-                                <li each={(value, idx) in item.values}>
-                                    <template if={typeof value === 'string'}>
-                                        {value}
-                                    </template>
-                                    <template if={typeof value !== 'string'}>
-                                        {value.value}
-                                    </template>
-                                    <template if={typeof value !== 'string' && value.groupValue}>
-                                        <ul each={mdType in Object.keys(value.groupValue.values)}>
-                                            <li>
-                                                {props.msg("ruleset_" + mdType)}: {mdToTitle(mdType, value.groupValue.values[mdType], item)}
-                                            </li> 
-                                        </ul>
-                                        <template if={idx != item.values.length-1}>--</template>
-                                    </template>
-                                </li>
-                            </ul>
-                            
-                        </td>
-					</tr>
+					<tbody>
+						<tr each={ item in state.values}>
+							<th>{item.name}</th>
+							<td>
+	                            <!-- <template if={item.values.length == 1}>{item.values[0].value}</template>-->
+	                            <ul >
+	                                <li each={(value, idx) in item.values}>
+	                                    <template if={typeof value === 'string'}>
+	                                        {value}
+	                                    </template>
+	                                    <template if={typeof value !== 'string'}>
+	                                        {value.value}
+	                                    </template>
+	                                    <template if={typeof value !== 'string' && value.groupValue}>
+	                                        <ul each={mdType in Object.keys(value.groupValue.values)}>
+	                                            <li>
+	                                                {props.msg("ruleset_" + mdType)}: {mdToTitle(mdType, value.groupValue.values[mdType], item)}
+	                                            </li> 
+	                                        </ul>
+	                                        <template if={idx != item.values.length-1}>--</template>
+	                                    </template>
+	                                </li>
+	                            </ul>
+	                        </td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
+			<!-- // BOX CONTENT -->
 		</div>
 	</div>
 	<style>
@@ -82,26 +88,36 @@
         }
 	</style>
 	<script>
-		import {vocabularyForMetadataType, recordMainValue, recordTitle, recordFromMainEntry} from '../vocabulary_util.js'
+		import {vocabularyForMetadataType, recordMainValue, recordTitle, recordFromMainEntry} from '../vocabulary_util.js';
 		export default {
+			/* triggered before mounting */
 			onBeforeMount(state, props) {
-				console.log("preview:", props)
+				console.log("preview:", props);
 				this.listenerFunction = this.keyListener.bind(this);
-				document.addEventListener("keyup", this.listenerFunction)
+				document.addEventListener("keyup", this.listenerFunction);
 			},
+			
+			/* triggered after mounted */
 			onMounted() {
-				this.state.values = this.props.values
+				this.state.values = this.props.values;
 				console.log(this.state.values);
 				this.update();
 		    },
+		    
+		    /* triggered before unmounting */
 		    onBeforeUnmount() {
 		    	document.removeEventListener("keyup", this.listenerFunction);
 		    },
+		    
+		    /* listener function of key */
 		    keyListener(e) {
 		    	if(e.key == "Escape") {
+		    		// hide is defined in app.tag as hidePreview
 		    		this.props.hide();
 		    	}
 		    },
+		    
+		    /* used to get the title of a metadata record */
 			mdToTitle(mdType, id, item) {
 				console.log(mdType, id, item.groupMappings);
 				let mappings = item.groupMappings[0].mappings;

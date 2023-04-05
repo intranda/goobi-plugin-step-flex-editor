@@ -1,11 +1,16 @@
 <box>
 	<div class="box box-color orange box-bordered box-small">
+		<!-- BOX TITLE -->
 		<div class="box-title">
 			<h3>
 				{props.box.name}
 			</h3>
 		</div>
+		<!-- BOX TITLE -->
+		
+		<!-- BOX CONTENT -->
 		<div class="box-content nopadding">
+			<!-- BOX CONTENT TOP -->
 			<div class="box-content-top" if={ state.filteredFields.length > 0 || state.search.length > 0}>
 				<div class="inner-addon right-addon" if={props.box.fields.filter( field => !field.show ).length > 7 || state.search.length > 0}>
 					<i class="fa fa-search"></i>
@@ -17,6 +22,8 @@
 					{field.name}
 				</a>
 			</div>
+			
+			<!-- COMPONENT for fields whose types are not MODAL_PROVENANCE -->
 			<div class="field-detail" each={field in props.box.fields} if={field.show && field.type != "MODAL_PROVENANCE"}>
 				<div class="field-label">
 					<div class="label-text">
@@ -32,6 +39,8 @@
 					<Fieldvalue field={field} vocabularies={props.vocabularies}></Fieldvalue>
 				</div>
 			</div>
+			
+			<!-- COMPONENT for fields of type MODAL_PROVENANCE -->
             <template each={(field, idx) in props.box.fields} if={field.show && field.type == "MODAL_PROVENANCE"}>
                 <Provenanceentry 
                     each={(value, groupIdx) in field.values} 
@@ -41,8 +50,11 @@
                     msg={props.msg}
                     deleteValue={getDeleteValueFromFieldFunction(field, groupIdx)} />
             </template>
+            
 		</div>
+		<!-- // BOX CONTENT -->
 	</div>
+	
     <Provenancemodal 
         if={state.showProvenanceModal} 
         hide={hideProvenanceModal}
@@ -126,20 +138,28 @@
 			Provenancemodal,
 			Provenanceentry
 	    },
+	    
+	    /* triggered before mounting */
 	    onBeforeMount(state, props) {
 	        this.state = {
 	        	filteredFields: [],
 	        	search: '',
 	        	showProvenanceModal: false
-	        }
+	        };
 	    },
+	    
+	    /* triggered after mounted */
 	    onMounted(state, props) {
 	        this.filterFields();
 	    },
+	    
+	    /* used in the provenancemodal.tag as hide */
 	    hideProvenanceModal() {
-	    	this.state.showProvenanceModal = false
+	    	this.state.showProvenanceModal = false;
 	    	this.update();
 	    },
+	    
+	    /* triggered when a fa-plus-circle button is clicked */
 	    showField(field) {
 	        field.show = true;
 	        if(field.multiVocabulary) {
@@ -149,33 +169,43 @@
 	        this.filterFields();
 	        this.update();
 	    },
+	    
+	    /* triggered when a fa-minus-circle button is clicked, used to delete a field */
 	    emptyField(field) {
 	        field.show = false;
 	        field.values = [];
 	        this.filterFields();
 	    },
+	    
+	    /* triggered when the text input in the BOX CONTENT TOP component gets an input */
 	    filter(e) {
 	        this.state.search = e.target.value.toLowerCase();
 	        console.log(this.state.search.length);
 	        this.filterFields();
 	    },
+	    
+	    /* used by other functions to filter the fields */
 	    filterFields() {
 	    	if(this.state.search == '') {
 	            this.state.filteredFields = this.props.box.fields.filter(field => !field.show || field.repeatable);
-	            this.update()
+	            this.update();
 	            return;
 	        } 
 	        this.state.filteredFields = this.props.box.fields
 	        	.filter(field => field.name.toLowerCase().indexOf(this.state.search) >= 0 && !field.show);
 	        this.update();
 	    },
+	    
+	    /* used in the provenancemodal.tag as valuesChanged */
 	    valuesChanged() {
 	    	console.log(this.state.provenanceField);
 	    	this.update();
 	    },
+	    
+	    /* used in the provenanceentry.tag as deleteValue */
 	    getDeleteValueFromFieldFunction(field, valueIndex) {
 	    	return () => {
-	    		console.log("deleting:", field.values, valueIndex)
+	    		console.log("deleting:", field.values, valueIndex);
 	    		field.values.splice(valueIndex, 1);
 	    		this.update();
 	    	}

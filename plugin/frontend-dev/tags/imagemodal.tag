@@ -1,14 +1,25 @@
 <imagemodal>
+	<!-- hide is defined in app.tag as hideImages -->
 	<div class="my-modal-bg" onclick={props.hide}>
 		<div class="box box-color box-bordered" onclick={ e => e.stopPropagation()}>
+			
+			<!-- BOX TITLE -->
 			<div class="box-title">
 				<span>Bildanzeige</span>
+				<!-- hide is defined in app.tag as hideImages -->
 				<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
 			</div>
+			<!-- // BOX TITLE -->
+			
+			<!-- BOX CONTENT -->
 			<div class="box-content">
+				<!-- IMAGE -->
 				<div class="image-container">
 					<img src={state.imageSource}></img>
 				</div>
+				<!-- // IMAGE -->
+				
+				<!-- BUTTONS to change pages -->
 				<div class="paginator">
 					<button class="btn" onclick={firstPage}>
 						<i class="fa fa-angle-double-left"></i>
@@ -26,7 +37,9 @@
 						<i class="fa fa-angle-double-right"></i>
 					</button>
 				</div>
+				<!-- // BUTTONS -->
 			</div>
+			<!-- BOX CONTENT -->
 		</div>
 	</div>	
 	
@@ -86,41 +99,61 @@
 	
 	<script>
 		export default {
+			/* triggered before mounting */
 			onBeforeMount(state, props) {
 				this.listenerFunction = this.keyListener.bind(this);
-				document.addEventListener("keyup", this.listenerFunction)
+				document.addEventListener("keyup", this.listenerFunction);
 			},
+			
+			/* triggered after mounted */
 			onMounted() {
 				this.state.currentPageNumber = 0;
 				this.setImageSource();
 			},
+			
+			/* triggered before unmounting */
 			onBeforeUnmount() {
 		    	document.removeEventListener("keyup", this.listenerFunction);
 		    },
+		    
+		    /* listener function of keys */
 		    keyListener(e) {
 		    	if(e.key == "Escape") {
+		    		// hide is defined in app.tag as hideImages
 		    		this.props.hide();
 		    	}
 		    },
+		    
+		    /* used to retrieve values from msg */
 			msg(key) {
 				return this.props.msg(key);
 			},
+			
+			/* triggered when the button `<<` is clicked */
 			firstPage() {
 				this.state.currentPageNumber = 0;
 				this.setImageSource();
 			},
+			
+			/* triggered when the button `< Vorheriges Bild` is clicked */
 			prevPage() {
-				this.state.currentPageNumber = Math.max(0, this.state.currentPageNumber-1)
+				this.state.currentPageNumber = Math.max(0, this.state.currentPageNumber-1);
 				this.setImageSource();	
 			},
+			
+			/* triggered when the button `Nächstes Bild >` is clicked */
 			nextPage() {
-				this.state.currentPageNumber = Math.min(this.props.images.length-1, this.state.currentPageNumber+1)
+				this.state.currentPageNumber = Math.min(this.props.images.length-1, this.state.currentPageNumber+1);
 				this.setImageSource();				
 			},
+			
+			/* triggered when the button `>>` is clicked */
 			lastPage() {
 				this.state.currentPageNumber = this.props.images.length-1;
 				this.setImageSource();
 			},
+			
+			/* used to set the source of the image to be shown */
 			setImageSource() {
 				var imageName = this.props.images[this.state.currentPageNumber];
 				var height = Math.floor(window.innerHeight*0.6);
