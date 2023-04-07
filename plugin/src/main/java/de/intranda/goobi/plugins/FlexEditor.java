@@ -40,6 +40,7 @@ public class FlexEditor implements IRestGuiPlugin {
 
     @Override
     public String getPagePath() {
+        log.debug("FlexEditor::getPagePath is called");
         return "/uii/guiPlugin.xhtml";
     }
 
@@ -50,7 +51,8 @@ public class FlexEditor implements IRestGuiPlugin {
 
     @Override
     public void initialize(Step step, String returnPath) {
-        log.info(returnPath);
+        log.debug(returnPath);
+        log.debug("FlexEditor::initialize is called");
         this.step = step;
         this.returnPath = returnPath;
 
@@ -84,6 +86,8 @@ public class FlexEditor implements IRestGuiPlugin {
 
     @Override
     public void initRoutes(Service http) {
+        log.debug("FlexEditor::initRoutes is called");
+        log.debug("http = " + http);
         Routes.initRoutes(http);
     }
 

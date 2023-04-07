@@ -50,7 +50,9 @@ import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
+import lombok.extern.log4j.Log4j2;
 import spark.Route;
+import ugh.dl.Corporate;
 import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
@@ -58,12 +60,14 @@ import ugh.dl.Metadata;
 import ugh.dl.MetadataGroup;
 import ugh.dl.MetadataGroupType;
 import ugh.dl.MetadataType;
+import ugh.dl.Person;
 import ugh.dl.Prefs;
 import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.exceptions.PreferencesException;
 import ugh.exceptions.ReadException;
 import ugh.exceptions.WriteException;
 
+@Log4j2
 public class Handlers {
     private static Gson gson = new Gson();
     private static Type columnListType = TypeToken.getParameterized(List.class, Column.class).getType();
@@ -139,10 +143,15 @@ public class Handlers {
     };
 
     public static Route saveMets = (req, res) -> {
+        log.debug("The Route saveMets is called");
+        //        log.debug(req.body());
         List<Column> userInput = gson.fromJson(req.body(), columnListType);
         int processId = Integer.parseInt(req.params("processid"));
         Process p = ProcessManager.getProcessById(processId);
-        saveMetadata(userInput, p);
+        log.debug("setting up httpRequest");
+        HttpServletRequest httpRequest = req.raw();
+        log.debug("httpRequest is set up");
+        saveMetadata(userInput, p, httpRequest);
         return "";
     };
 
@@ -169,8 +178,11 @@ public class Handlers {
         return colList;
     }
 
-    private static void saveMetadata(List<Column> userInput, Process p) throws ReadException, PreferencesException, WriteException, IOException,
+    private static void saveMetadata(List<Column> userInput, Process p, HttpServletRequest request)
+            throws ReadException, PreferencesException, WriteException, IOException,
             InterruptedException, SwapException, DAOException, MetadataTypeNotAllowedException {
+        log.debug("saveMetadata is called");
+
         Ruleset ruleset = p.getRegelsatz();
         Prefs prefs = ruleset.getPreferences();
         Fileformat ff = p.readMetadataFile();
@@ -201,15 +213,48 @@ public class Handlers {
                             MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupValue.getGroupName());
                             MetadataGroup newGroup = new MetadataGroup(mdgt);
                             for (String metadataTypeName : groupValue.getValues().keySet()) {
+                                log.debug("metadataTypeName = " + metadataTypeName);
+                                // newGroup.getMetadataList() will return an empty list, so we have to choose another way:
+                                // 1. find out the MetadataType whose name is equal to metadataTypeName
+                                // 2. create a Metadata object based on this MetadataType
+                                // 3. add this Metadata object to the MetadataGroup newGroup
+                                for (MetadataType mdType : newGroup.getAddableMetadataTypes(false)) {
+                                    log.debug("mdType = " + mdType.getName());
+                                    if (mdType.getName().equals(metadataTypeName)) {
+                                        // create a Metadata object based on this MetadataType and add it to the newGroup
+                                        if (mdType.getIsPerson()) {
+                                            Person person = new Person(mdType);
+                                            person.setRole(mdType.getName());
+                                            newGroup.addPerson(person);
+                                        } else if (mdType.isCorporate()) {
+                                            Corporate corporate = new Corporate(mdType);
+                                            corporate.setRole(mdType.getName());
+                                            newGroup.addCorporate(corporate);
+                                        } else {
+                                            Metadata metadata = new Metadata(mdType);
+                                            newGroup.addMetadata(metadata);
+                                        }
+                                    }
+                                }
+                                // ======= REFACTORING NEEDED ======= //
                                 for (Metadata groupMd : newGroup.getMetadataList()) {
                                     if (groupMd.getType().getName().equals(metadataTypeName)) {
                                         // fetch records from vocabulary here and set this as AuthorityFile 
                                         String metadataValue = groupValue.getValues().get(metadataTypeName);
                                         Mapping mapping = metadataTypeToMappingMap.get(metadataTypeName);
+                                        log.debug("mapping.getMetadataType() = " + mapping.getMetadataType());
+                                        log.debug("mapping.getSourceVocabulary() = " + mapping.getSourceVocabulary());
                                         if (mapping.getSourceVocabulary() != null) {
                                             Vocabulary vocab = VocabularyManager.getVocabularyByTitle(mapping.getSourceVocabulary());
+                                            log.debug("vocab.getUrl() = " + vocab.getUrl());
+                                            log.debug("vocab.getTitle() = " + vocab.getTitle());
+                                            log.debug("vocab.getDescription() = " + vocab.getDescription());
+                                            log.debug("vocab.getId() = " + vocab.getId());
                                             VocabRecord record = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(metadataValue));
-                                            setAuthorityData(groupMd, vocab, record);
+                                            log.debug("record.getTitle() = " + record.getTitle());
+                                            log.debug("record.getId() = " + record.getId());
+                                            log.debug("record.getVocabularyId() = " + record.getVocabularyId());
+                                            setAuthorityData(groupMd, vocab, record, request);
                                             // groupMd.setAutorityFile("GOOBI_VOCABULARY", vocab.getTitle(), metadataValue);
                                             List<String> titleStrings = record.getFields()
                                                     .stream()
@@ -220,12 +265,13 @@ public class Handlers {
                                         } else {
                                             groupMd.setValue(metadataValue);
                                         }
+                                        log.debug(groupMd.getValue());
                                     }
                                 }
                             }
                             ds.addMetadataGroup(newGroup);
                         }
-                    } else {
+                    } else { // !field.isMultiVocabulary()
                         String fieldMdt = field.getMetadatatype();
                         if (fieldMdt == null || "unknown".equals(fieldMdt)) {
                             continue;
@@ -261,7 +307,8 @@ public class Handlers {
         p.writeMetadataFile(ff);
     }
 
-    private static void setAuthorityData(Metadata groupMd, Vocabulary vocab, VocabRecord record) {
+    private static void setAuthorityData(Metadata groupMd, Vocabulary vocab, VocabRecord record, HttpServletRequest request) {
+        log.debug("setAuthorityData is called");
         if (StringUtils.isNotBlank(ConfigurationHelper.getInstance().getGoobiAuthorityServerUser())
                 && StringUtils.isNotBlank(ConfigurationHelper.getInstance().getGoobiAuthorityServerUrl())) {
             groupMd.setAutorityFile("GOOBI_VOCABULARY",
@@ -271,18 +318,25 @@ public class Handlers {
                             + record.getVocabularyId() + "/records/" + record.getId());
         } else {
             FacesContext context = FacesContextHelper.getCurrentFacesContext();
-            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            log.debug("context is" + (context == null ? " " : " NOT ") + "null");
+            //            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
             String contextPath = request.getContextPath();
             String scheme = request.getScheme(); // http
             String serverName = request.getServerName(); // hostname.com
             int serverPort = request.getServerPort(); // 80
             String reqUrl = scheme + "://" + serverName + ":" + serverPort + contextPath;
+            log.debug("contextPath = " + contextPath);
+            log.debug("scheme = " + scheme);
+            log.debug("serverName = " + serverName);
+            log.debug("serverPort = " + serverPort);
+            log.debug("reqUrl = " + reqUrl);
             Client client = ClientBuilder.newClient();
             WebTarget base = client.target(reqUrl);
             WebTarget vocabularyBase = base.path("api").path("vocabulary");
             groupMd.setAutorityFile(vocab.getTitle(), vocabularyBase.getUri().toString(),
                     vocabularyBase.getUri() + "/vocabularies/" + record.getVocabularyId() + "/" + record.getId());
         }
+        log.debug("setAuthorityData is exited");
     }
 
     private static Map<String, Mapping> createMetadataTypeToMappingMap(Field field) {
