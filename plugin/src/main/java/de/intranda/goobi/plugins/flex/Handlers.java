@@ -196,110 +196,9 @@ public class Handlers {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
                     if (field.isMultiVocabulary()) {
-                        Set<String> allGroups = field.getGroupMappings()
-                                .stream()
-                                .map(GroupMapping::getGroupName)
-                                .collect(Collectors.toSet());
-                        Map<String, Mapping> metadataTypeToMappingMap = createMetadataTypeToMappingMap(field);
-                        //delete all groups managed by this field
-                        for (String groupName : allGroups) {
-                            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupName);
-                            for (MetadataGroup metadataGroup : ds.getAllMetadataGroupsByType(mdgt)) {
-                                ds.removeMetadataGroup(metadataGroup, true);
-                            }
-                        }
-                        for (FieldValue fv : field.getValues()) {
-                            GroupValue groupValue = fv.getGroupValue();
-                            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupValue.getGroupName());
-                            MetadataGroup newGroup = new MetadataGroup(mdgt);
-                            for (String metadataTypeName : groupValue.getValues().keySet()) {
-                                log.debug("metadataTypeName = " + metadataTypeName);
-                                // newGroup.getMetadataList() will return an empty list, so we have to choose another way:
-                                // 1. find out the MetadataType whose name is equal to metadataTypeName
-                                // 2. create a Metadata object based on this MetadataType
-                                // 3. add this Metadata object to the MetadataGroup newGroup
-                                for (MetadataType mdType : newGroup.getAddableMetadataTypes(false)) {
-                                    log.debug("mdType = " + mdType.getName());
-                                    if (mdType.getName().equals(metadataTypeName)) {
-                                        // create a Metadata object based on this MetadataType and add it to the newGroup
-                                        if (mdType.getIsPerson()) {
-                                            Person person = new Person(mdType);
-                                            person.setRole(mdType.getName());
-                                            newGroup.addPerson(person);
-                                        } else if (mdType.isCorporate()) {
-                                            Corporate corporate = new Corporate(mdType);
-                                            corporate.setRole(mdType.getName());
-                                            newGroup.addCorporate(corporate);
-                                        } else {
-                                            Metadata metadata = new Metadata(mdType);
-                                            newGroup.addMetadata(metadata);
-                                        }
-                                    }
-                                }
-                                // ======= REFACTORING NEEDED ======= //
-                                for (Metadata groupMd : newGroup.getMetadataList()) {
-                                    if (groupMd.getType().getName().equals(metadataTypeName)) {
-                                        // fetch records from vocabulary here and set this as AuthorityFile 
-                                        String metadataValue = groupValue.getValues().get(metadataTypeName);
-                                        Mapping mapping = metadataTypeToMappingMap.get(metadataTypeName);
-                                        log.debug("mapping.getMetadataType() = " + mapping.getMetadataType());
-                                        log.debug("mapping.getSourceVocabulary() = " + mapping.getSourceVocabulary());
-                                        if (mapping.getSourceVocabulary() != null) {
-                                            Vocabulary vocab = VocabularyManager.getVocabularyByTitle(mapping.getSourceVocabulary());
-                                            log.debug("vocab.getUrl() = " + vocab.getUrl());
-                                            log.debug("vocab.getTitle() = " + vocab.getTitle());
-                                            log.debug("vocab.getDescription() = " + vocab.getDescription());
-                                            log.debug("vocab.getId() = " + vocab.getId());
-                                            VocabRecord record = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(metadataValue));
-                                            log.debug("record.getTitle() = " + record.getTitle());
-                                            log.debug("record.getId() = " + record.getId());
-                                            log.debug("record.getVocabularyId() = " + record.getVocabularyId());
-                                            setAuthorityData(groupMd, vocab, record, request);
-                                            // groupMd.setAutorityFile("GOOBI_VOCABULARY", vocab.getTitle(), metadataValue);
-                                            List<String> titleStrings = record.getFields()
-                                                    .stream()
-                                                    .filter(f -> f.getDefinition().isTitleField())
-                                                    .map(f -> f.getValue())
-                                                    .collect(Collectors.toList());
-                                            groupMd.setValue(StringUtils.join(titleStrings, " "));
-                                        } else {
-                                            groupMd.setValue(metadataValue);
-                                        }
-                                        log.debug(groupMd.getValue());
-                                    }
-                                }
-                            }
-                            ds.addMetadataGroup(newGroup);
-                        }
+                        processMultiVocabularyField(prefs, ds, field, request);
                     } else { // !field.isMultiVocabulary()
-                        String fieldMdt = field.getMetadatatype();
-                        if (fieldMdt == null || "unknown".equals(fieldMdt)) {
-                            continue;
-                        }
-                        //look up metadata of top DS and write value(s) to field
-                        MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
-                        if (mdt == null) {
-                            throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
-                        }
-                        @SuppressWarnings("unchecked")
-                        List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
-                        List<FieldValue> fieldValues = field.getValues();
-                        int maxListLen = Math.max(metadataList.size(), fieldValues.size());
-                        for (int i = 0; i < maxListLen; i++) {
-                            //TODO: not sure if this works, better check...
-                            if (i >= fieldValues.size()) {
-                                ds.removeMetadata(metadataList.get(i));
-                                continue;
-                            }
-                            if (i >= metadataList.size()) {
-                                Metadata newMeta = new Metadata(mdt);
-                                newMeta.setValue(fieldValues.get(i).getValue());
-                                ds.addMetadata(newMeta);
-                                continue;
-                            }
-                            Metadata oldMeta = metadataList.get(i);
-                            oldMeta.setValue(fieldValues.get(i).getValue());
-                        }
+                        processSingleVocabularyField(prefs, ds, field);
                     }
                 }
             }
@@ -307,15 +206,139 @@ public class Handlers {
         p.writeMetadataFile(ff);
     }
 
+    private static void processMultiVocabularyField(Prefs prefs, DocStruct ds, Field field, HttpServletRequest request)
+            throws MetadataTypeNotAllowedException {
+        Set<String> allGroups = field.getGroupMappings()
+                .stream()
+                .map(GroupMapping::getGroupName)
+                .collect(Collectors.toSet());
+        Map<String, Mapping> metadataTypeToMappingMap = createMetadataTypeToMappingMap(field);
+        //delete all groups managed by this field
+        for (String groupName : allGroups) {
+            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupName);
+            for (MetadataGroup metadataGroup : ds.getAllMetadataGroupsByType(mdgt)) {
+                ds.removeMetadataGroup(metadataGroup, true);
+            }
+        }
+        for (FieldValue fv : field.getValues()) {
+            GroupValue groupValue = fv.getGroupValue();
+            MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupValue.getGroupName());
+            MetadataGroup newGroup = new MetadataGroup(mdgt);
+            for (String metadataTypeName : groupValue.getValues().keySet()) {
+                String metadataValue = groupValue.getValues().get(metadataTypeName);
+                prepareMetadataGivenTypeName(newGroup, metadataTypeName, metadataValue, metadataTypeToMappingMap, request);
+            }
+            ds.addMetadataGroup(newGroup);
+        }
+    }
+
+    private static void processSingleVocabularyField(Prefs prefs, DocStruct ds, Field field)
+            throws PreferencesException, MetadataTypeNotAllowedException {
+        String fieldMdt = field.getMetadatatype();
+        if (fieldMdt == null || "unknown".equals(fieldMdt)) {
+            return;
+        }
+        //look up metadata of top DS and write value(s) to field
+        MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
+        if (mdt == null) {
+            throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
+        }
+        @SuppressWarnings("unchecked")
+        List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
+        List<FieldValue> fieldValues = field.getValues();
+        int maxListLen = Math.max(metadataList.size(), fieldValues.size());
+        for (int i = 0; i < maxListLen; i++) {
+            //TODO: not sure if this works, better check...
+            if (i >= fieldValues.size()) {
+                ds.removeMetadata(metadataList.get(i));
+                continue;
+            }
+            if (i >= metadataList.size()) {
+                Metadata newMeta = new Metadata(mdt);
+                newMeta.setValue(fieldValues.get(i).getValue());
+                ds.addMetadata(newMeta);
+                continue;
+            }
+            Metadata oldMeta = metadataList.get(i);
+            oldMeta.setValue(fieldValues.get(i).getValue());
+        }
+    }
+
+    private static void prepareMetadataGivenTypeName(MetadataGroup newGroup, String metadataTypeName, String metadataValue,
+            Map<String, Mapping> metadataTypeToMappingMap, HttpServletRequest request) throws MetadataTypeNotAllowedException {
+        log.debug("metadataTypeName = " + metadataTypeName);
+        // a direct call of newGroup.getMetadataList() will return an empty list, so we have to choose another way:
+        // 1. find out the MetadataType whose name is equal to metadataTypeName
+        // 2. create a Metadata object based on this MetadataType
+        // 3. add this Metadata object to the MetadataGroup newGroup
+        Metadata groupMd = createMetadataObject(newGroup, metadataTypeName);
+        if (groupMd == null) {
+            return;
+        }
+        // check Vocabulary to set value to groupMd
+        Mapping mapping = metadataTypeToMappingMap.get(metadataTypeName);
+        log.debug("mapping.getMetadataType() = " + mapping.getMetadataType());
+        log.debug("mapping.getSourceVocabulary() = " + mapping.getSourceVocabulary());
+        if (mapping.getSourceVocabulary() != null) {
+            Vocabulary vocab = VocabularyManager.getVocabularyByTitle(mapping.getSourceVocabulary());
+            log.debug("vocab.getUrl() = " + vocab.getUrl());
+            log.debug("vocab.getTitle() = " + vocab.getTitle());
+            log.debug("vocab.getDescription() = " + vocab.getDescription());
+            log.debug("vocab.getId() = " + vocab.getId());
+            VocabRecord record = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(metadataValue));
+            log.debug("record.getTitle() = " + record.getTitle());
+            log.debug("record.getId() = " + record.getId());
+            log.debug("record.getVocabularyId() = " + record.getVocabularyId());
+            setAuthorityData(groupMd, vocab, record, request);
+            // groupMd.setAutorityFile("GOOBI_VOCABULARY", vocab.getTitle(), metadataValue);
+            List<String> titleStrings = record.getFields()
+                    .stream()
+                    .filter(f -> f.getDefinition().isTitleField())
+                    .map(f -> f.getValue())
+                    .collect(Collectors.toList());
+            groupMd.setValue(StringUtils.join(titleStrings, " "));
+        } else {
+            groupMd.setValue(metadataValue);
+        }
+        log.debug(groupMd.getValue());
+    }
+
+    private static Metadata createMetadataObject(MetadataGroup newGroup, String metadataTypeName) throws MetadataTypeNotAllowedException {
+        for (MetadataType mdType : newGroup.getAddableMetadataTypes(false)) {
+            log.debug("mdType = " + mdType.getName());
+            if (mdType.getName().equals(metadataTypeName)) {
+                // create a Metadata object based on this MetadataType and add it to the newGroup
+                if (mdType.getIsPerson()) {
+                    Person person = new Person(mdType);
+                    person.setRole(mdType.getName());
+                    newGroup.addPerson(person);
+                    return person;
+                }
+
+                if (mdType.isCorporate()) {
+                    Corporate corporate = new Corporate(mdType);
+                    corporate.setRole(mdType.getName());
+                    newGroup.addCorporate(corporate);
+                    return corporate;
+                }
+
+                Metadata metadata = new Metadata(mdType);
+                newGroup.addMetadata(metadata);
+                return metadata;
+            }
+        }
+        return null;
+    }
+
     private static void setAuthorityData(Metadata groupMd, Vocabulary vocab, VocabRecord record, HttpServletRequest request) {
         log.debug("setAuthorityData is called");
-        if (StringUtils.isNotBlank(ConfigurationHelper.getInstance().getGoobiAuthorityServerUser())
-                && StringUtils.isNotBlank(ConfigurationHelper.getInstance().getGoobiAuthorityServerUrl())) {
-            groupMd.setAutorityFile("GOOBI_VOCABULARY",
-                    ConfigurationHelper.getInstance().getGoobiAuthorityServerUrl(),
-                    ConfigurationHelper.getInstance().getGoobiAuthorityServerUrl()
-                            + ConfigurationHelper.getInstance().getGoobiAuthorityServerUser() + "/vocabularies/"
-                            + record.getVocabularyId() + "/records/" + record.getId());
+        ConfigurationHelper helper = ConfigurationHelper.getInstance();
+        boolean validGoobiAuthorityServer = StringUtils.isNoneBlank(helper.getGoobiAuthorityServerUser(), helper.getGoobiAuthorityServerUrl());
+        if (validGoobiAuthorityServer) {
+            String serverUrl = helper.getGoobiAuthorityServerUrl();
+            String serverUser = helper.getGoobiAuthorityServerUser();
+            groupMd.setAutorityFile("GOOBI_VOCABULARY", serverUrl,
+                    serverUrl + serverUser + "/vocabularies/" + record.getVocabularyId() + "/records/" + record.getId());
         } else {
             FacesContext context = FacesContextHelper.getCurrentFacesContext();
             log.debug("context is" + (context == null ? " " : " NOT ") + "null");
