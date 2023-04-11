@@ -75,7 +75,7 @@ public class Handlers {
     }
 
     public static final Route allVocabs = (req, res) -> {
-        XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.title);
+        XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.TITLE);
         List<Column> colList = readColsFromConfig(conf);
         Map<String, Vocabulary> vocabMap = new TreeMap<>();
         for (Column col : colList) {
@@ -125,7 +125,7 @@ public class Handlers {
     };
 
     public static final Route getMetadata = (req, res) -> {
-        XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.title);
+        XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.TITLE);
         List<Column> colList = readColsFromConfig(conf);
         mergeMetadata(colList, Integer.parseInt(req.params(STRING_PROCESS_ID)));
         return colList;

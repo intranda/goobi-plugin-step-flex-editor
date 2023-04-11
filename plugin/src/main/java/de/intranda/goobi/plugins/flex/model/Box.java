@@ -9,8 +9,8 @@ import lombok.Data;
 
 @Data
 public class Box {
-    public String name;
-    public List<Field> fields;
+    private String name;
+    private List<Field> fields;
 
     public Box(String name) {
         this.name = name;

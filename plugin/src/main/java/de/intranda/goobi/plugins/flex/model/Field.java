@@ -35,7 +35,7 @@ public class Field {
         String metadatatype = conf.getString("./metadatatype");
 
         String name = conf.getString("./name");
-        List<FieldValue> values = new ArrayList<FieldValue>();
+        List<FieldValue> values = new ArrayList<>();
         List<String> sourceVocabulary = Arrays.asList(conf.getStringArray("./sourceVocabulary"));
 
         return new Field(type, metadatatype, groupMappings, name, values, sourceVocabulary, show, repeatable, multiVocabulary);

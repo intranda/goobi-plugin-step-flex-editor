@@ -7,6 +7,10 @@ import spark.Service;
 public class Routes {
     private static Gson gson = new Gson();
 
+    private Routes() {
+        // hide the implicit constructor
+    }
+
     public static void initRoutes(Service http) {
         http.path("/ce", () -> {
             http.get("/vocabularies", Handlers.allVocabs, gson::toJson);

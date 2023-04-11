@@ -59,7 +59,7 @@ public class FlexEditorInstaller implements Callable<Integer> {
     }
 
     public void extractFile(String filePath, Path assetsDir) {
-        Path out = assetsDir.resolve("plugins").resolve(FlexEditor.title).resolve(filePath);
+        Path out = assetsDir.resolve("plugins").resolve(FlexEditor.TITLE).resolve(filePath);
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("frontend/" + filePath)) {
             if (!Files.exists(out.getParent())) {
                 Files.createDirectories(out.getParent());

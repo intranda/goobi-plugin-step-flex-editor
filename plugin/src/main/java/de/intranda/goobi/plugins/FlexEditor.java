@@ -21,7 +21,7 @@ import spark.Service;
 public class FlexEditor implements IRestGuiPlugin {
     private Step step;
     private String returnPath;
-    public final static String title = "intranda_step_flex-editor";
+    public static final String TITLE = "intranda_step_flex-editor";
 
     @Override
     public String cancel() {
@@ -66,7 +66,7 @@ public class FlexEditor implements IRestGuiPlugin {
 
     @Override
     public String getTitle() {
-        return title;
+        return TITLE;
     }
 
     @Override
