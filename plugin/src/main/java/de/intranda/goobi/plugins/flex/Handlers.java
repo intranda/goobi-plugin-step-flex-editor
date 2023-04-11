@@ -79,6 +79,7 @@ public class Handlers {
         for (Column col : colList) {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
+
                     for (String vocabName : field.getSourceVocabularies()) {
                         if (vocabName != null && !vocabMap.containsKey(vocabName)) {
                             Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
@@ -86,6 +87,7 @@ public class Handlers {
                             vocabMap.put(vocabName, vocab);
                         }
                     }
+
                     for (GroupMapping gm : field.getGroupMappings()) {
                         for (Mapping mapping : gm.getMappings()) {
                             String vocabName = mapping.getSourceVocabulary();
@@ -101,6 +103,7 @@ public class Handlers {
                 }
             }
         }
+        log.debug("vocabMap = " + vocabMap);
         return vocabMap;
     };
 
@@ -226,7 +229,10 @@ public class Handlers {
             MetadataGroup newGroup = new MetadataGroup(mdgt);
             for (String metadataTypeName : groupValue.getValues().keySet()) {
                 String metadataValue = groupValue.getValues().get(metadataTypeName);
-                prepareMetadataGivenTypeName(newGroup, metadataTypeName, metadataValue, metadataTypeToMappingMap, request);
+                log.debug("metadataValue = " + metadataValue);
+                String recordId = metadataValue.substring(metadataValue.lastIndexOf("/") + 1);
+                log.debug("recordId = " + recordId);
+                prepareMetadataGivenTypeName(newGroup, metadataTypeName, recordId, metadataTypeToMappingMap, request);
             }
             ds.addMetadataGroup(newGroup);
         }
@@ -264,7 +270,7 @@ public class Handlers {
         }
     }
 
-    private static void prepareMetadataGivenTypeName(MetadataGroup newGroup, String metadataTypeName, String metadataValue,
+    private static void prepareMetadataGivenTypeName(MetadataGroup newGroup, String metadataTypeName, String recordId,
             Map<String, Mapping> metadataTypeToMappingMap, HttpServletRequest request) throws MetadataTypeNotAllowedException {
         log.debug("metadataTypeName = " + metadataTypeName);
         // a direct call of newGroup.getMetadataList() will return an empty list, so we have to choose another way:
@@ -285,7 +291,11 @@ public class Handlers {
             log.debug("vocab.getTitle() = " + vocab.getTitle());
             log.debug("vocab.getDescription() = " + vocab.getDescription());
             log.debug("vocab.getId() = " + vocab.getId());
-            VocabRecord record = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(metadataValue));
+            // The following statement does not work well, if we restart the plugin in order to save some other changes,
+            // after a previous saving of a provenance and leaving the plugin.
+            // A possible reason might be the missing metadataValue.
+            log.debug("recordId = " + recordId);
+            VocabRecord record = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(recordId));
             log.debug("record.getTitle() = " + record.getTitle());
             log.debug("record.getId() = " + record.getId());
             log.debug("record.getVocabularyId() = " + record.getVocabularyId());
@@ -298,7 +308,7 @@ public class Handlers {
                     .collect(Collectors.toList());
             groupMd.setValue(StringUtils.join(titleStrings, " "));
         } else {
-            groupMd.setValue(metadataValue);
+            groupMd.setValue(recordId);
         }
         log.debug(groupMd.getValue());
     }
