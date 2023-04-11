@@ -16,7 +16,6 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -45,7 +44,6 @@ import de.intranda.goobi.plugins.flex.model.ImagesResponse;
 import de.intranda.goobi.plugins.flex.model.Mapping;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.config.ConfigurationHelper;
-import de.sub.goobi.helper.FacesContextHelper;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
@@ -103,7 +101,6 @@ public class Handlers {
                 }
             }
         }
-        log.debug("vocabMap = " + vocabMap);
         return vocabMap;
     };
 
@@ -146,14 +143,10 @@ public class Handlers {
     };
 
     public static Route saveMets = (req, res) -> {
-        log.debug("The Route saveMets is called");
-        //        log.debug(req.body());
         List<Column> userInput = gson.fromJson(req.body(), columnListType);
         int processId = Integer.parseInt(req.params("processid"));
         Process p = ProcessManager.getProcessById(processId);
-        log.debug("setting up httpRequest");
         HttpServletRequest httpRequest = req.raw();
-        log.debug("httpRequest is set up");
         saveMetadata(userInput, p, httpRequest);
         return "";
     };
@@ -184,7 +177,6 @@ public class Handlers {
     private static void saveMetadata(List<Column> userInput, Process p, HttpServletRequest request)
             throws ReadException, PreferencesException, WriteException, IOException,
             InterruptedException, SwapException, DAOException, MetadataTypeNotAllowedException {
-        log.debug("saveMetadata is called");
 
         Ruleset ruleset = p.getRegelsatz();
         Prefs prefs = ruleset.getPreferences();
@@ -283,22 +275,11 @@ public class Handlers {
         }
         // check Vocabulary to set value to groupMd
         Mapping mapping = metadataTypeToMappingMap.get(metadataTypeName);
-        log.debug("mapping.getMetadataType() = " + mapping.getMetadataType());
-        log.debug("mapping.getSourceVocabulary() = " + mapping.getSourceVocabulary());
         if (mapping.getSourceVocabulary() != null) {
             Vocabulary vocab = VocabularyManager.getVocabularyByTitle(mapping.getSourceVocabulary());
-            log.debug("vocab.getUrl() = " + vocab.getUrl());
-            log.debug("vocab.getTitle() = " + vocab.getTitle());
-            log.debug("vocab.getDescription() = " + vocab.getDescription());
             log.debug("vocab.getId() = " + vocab.getId());
-            // The following statement does not work well, if we restart the plugin in order to save some other changes,
-            // after a previous saving of a provenance and leaving the plugin.
-            // A possible reason might be the missing metadataValue.
-            log.debug("recordId = " + recordId);
             VocabRecord record = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(recordId));
-            log.debug("record.getTitle() = " + record.getTitle());
             log.debug("record.getId() = " + record.getId());
-            log.debug("record.getVocabularyId() = " + record.getVocabularyId());
             setAuthorityData(groupMd, vocab, record, request);
             // groupMd.setAutorityFile("GOOBI_VOCABULARY", vocab.getTitle(), metadataValue);
             List<String> titleStrings = record.getFields()
@@ -350,19 +331,11 @@ public class Handlers {
             groupMd.setAutorityFile("GOOBI_VOCABULARY", serverUrl,
                     serverUrl + serverUser + "/vocabularies/" + record.getVocabularyId() + "/records/" + record.getId());
         } else {
-            FacesContext context = FacesContextHelper.getCurrentFacesContext();
-            log.debug("context is" + (context == null ? " " : " NOT ") + "null");
-            //            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
             String contextPath = request.getContextPath();
             String scheme = request.getScheme(); // http
             String serverName = request.getServerName(); // hostname.com
             int serverPort = request.getServerPort(); // 80
             String reqUrl = scheme + "://" + serverName + ":" + serverPort + contextPath;
-            log.debug("contextPath = " + contextPath);
-            log.debug("scheme = " + scheme);
-            log.debug("serverName = " + serverName);
-            log.debug("serverPort = " + serverPort);
-            log.debug("reqUrl = " + reqUrl);
             Client client = ClientBuilder.newClient();
             WebTarget base = client.target(reqUrl);
             WebTarget vocabularyBase = base.path("api").path("vocabulary");
