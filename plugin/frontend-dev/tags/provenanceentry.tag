@@ -22,12 +22,9 @@
         <div class="value" style="position: relative;">
         
             <span onmouseover={() => showPopover(key)} onmouseout={() => hidePopover(key)}>
-            	
+            	 
                 <input class="form-control" disabled value={recordTitle(props.groupValue.values[key], key)}></input>
-                
-                <!-- 
-                <input class="form-control" value={recordTitle(props.groupValue.values[key], key)}></input>
-                -->
+
             </span>
             
             <div
@@ -122,12 +119,22 @@
 			
 			/* used to get records from id */
 			recordFromId(id, metadatatype) {
+				console.log("recordFromId is called with id = " + id);
 				let mappings = this.props.field.groupMappings[0].mappings;
 				let vocabulary = vocabularyForMetadataType(mappings, metadatatype, this.props.vocabularies);
 				if(!vocabulary) {
 					return {fields: []};
 				}
+				
+				if (isNaN(id)){
+					id = this.retrieveId(id);
+				}
+
 				let record = vocabulary.records.filter(r => r.id == id)[0];
+				
+				console.log("record = ");
+				console.log(record);
+				
 				if(!record) {
 					return {fields: []};
 				}
@@ -141,9 +148,20 @@
 				if(!vocabulary) {
 					return id;
 				}
+				
+				if (isNaN(id)){
+					id = this.retrieveId(id);
+				}
+				
 				let record = vocabulary.records.filter(r => r.id == id)[0];
 				// the imported function is meant here
 				return recordTitle(record, vocabulary);
+			},
+			
+			/* used to retrieve id at reloading time from the string in the format /vocabularies/{vocabularyId}/{recordId} */
+			retrieveId(idString){
+				let parts = idString.split("/");
+				return parts[parts.length - 1];
 			},
 			
 			/*  */
