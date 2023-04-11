@@ -44,7 +44,6 @@ import de.intranda.goobi.plugins.flex.model.ImagesResponse;
 import de.intranda.goobi.plugins.flex.model.Mapping;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.config.ConfigurationHelper;
-import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.sub.goobi.persistence.managers.VocabularyManager;
@@ -69,8 +68,13 @@ import ugh.exceptions.WriteException;
 public class Handlers {
     private static Gson gson = new Gson();
     private static Type columnListType = TypeToken.getParameterized(List.class, Column.class).getType();
+    private static final String STRING_PROCESS_ID = "processid";
 
-    public static Route allVocabs = (req, res) -> {
+    private Handlers() {
+        // hide the implicit constructor
+    }
+
+    public static final Route allVocabs = (req, res) -> {
         XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.title);
         List<Column> colList = readColsFromConfig(conf);
         Map<String, Vocabulary> vocabMap = new TreeMap<>();
@@ -104,8 +108,8 @@ public class Handlers {
         return vocabMap;
     };
 
-    public static Route getMetsTranslations = (req, res) -> {
-        int processId = Integer.parseInt(req.params("processid"));
+    public static final Route getMetsTranslations = (req, res) -> {
+        int processId = Integer.parseInt(req.params(STRING_PROCESS_ID));
         String language = req.params("language");
         Map<String, String> translationMap = new HashMap<>();
 
@@ -120,15 +124,15 @@ public class Handlers {
         return translationMap;
     };
 
-    public static Route getMetadata = (req, res) -> {
+    public static final Route getMetadata = (req, res) -> {
         XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.title);
         List<Column> colList = readColsFromConfig(conf);
-        mergeMetadata(colList, Integer.parseInt(req.params("processid")));
+        mergeMetadata(colList, Integer.parseInt(req.params(STRING_PROCESS_ID)));
         return colList;
     };
 
-    public static Route getImages = (req, res) -> {
-        int processId = Integer.parseInt(req.params("processid"));
+    public static final Route getImages = (req, res) -> {
+        int processId = Integer.parseInt(req.params(STRING_PROCESS_ID));
         Process p = ProcessManager.getProcessById(processId);
         Path imDir = Paths.get(p.getImagesTifDirectory(false));
         if (Files.exists(imDir)) {
@@ -142,24 +146,24 @@ public class Handlers {
         return new ImagesResponse("orig", files);
     };
 
-    public static Route saveMets = (req, res) -> {
+    public static final Route saveMets = (req, res) -> {
         List<Column> userInput = gson.fromJson(req.body(), columnListType);
-        int processId = Integer.parseInt(req.params("processid"));
+        int processId = Integer.parseInt(req.params(STRING_PROCESS_ID));
         Process p = ProcessManager.getProcessById(processId);
         HttpServletRequest httpRequest = req.raw();
         saveMetadata(userInput, p, httpRequest);
         return "";
     };
 
-    public static Route newVocabEntry = (req, res) -> {
+    public static final Route newVocabEntry = (req, res) -> {
         String vocabName = req.params("vocabName");
         Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
-        VocabRecord record = gson.fromJson(req.body(), VocabRecord.class);
-        for (int i = 0; i < record.getFields().size(); i++) {
-            record.getFields().get(i).setDefinition(vocab.getStruct().get(i));
+        VocabRecord vocabRecord = gson.fromJson(req.body(), VocabRecord.class);
+        for (int i = 0; i < vocabRecord.getFields().size(); i++) {
+            vocabRecord.getFields().get(i).setDefinition(vocab.getStruct().get(i));
         }
-        VocabularyManager.saveRecord(vocab.getId(), record);
-        return record;
+        VocabularyManager.saveRecord(vocab.getId(), vocabRecord);
+        return vocabRecord;
     };
 
     private static List<Column> readColsFromConfig(XMLConfiguration conf) {
@@ -175,8 +179,7 @@ public class Handlers {
     }
 
     private static void saveMetadata(List<Column> userInput, Process p, HttpServletRequest request)
-            throws ReadException, PreferencesException, WriteException, IOException,
-            InterruptedException, SwapException, DAOException, MetadataTypeNotAllowedException {
+            throws ReadException, IOException, SwapException, PreferencesException, MetadataTypeNotAllowedException, WriteException {
 
         Ruleset ruleset = p.getRegelsatz();
         Prefs prefs = ruleset.getPreferences();
@@ -278,11 +281,10 @@ public class Handlers {
         if (mapping.getSourceVocabulary() != null) {
             Vocabulary vocab = VocabularyManager.getVocabularyByTitle(mapping.getSourceVocabulary());
             log.debug("vocab.getId() = " + vocab.getId());
-            VocabRecord record = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(recordId));
-            log.debug("record.getId() = " + record.getId());
-            setAuthorityData(groupMd, vocab, record, request);
-            // groupMd.setAutorityFile("GOOBI_VOCABULARY", vocab.getTitle(), metadataValue);
-            List<String> titleStrings = record.getFields()
+            VocabRecord vocabRecord = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(recordId));
+            log.debug("record.getId() = " + vocabRecord.getId());
+            setAuthorityData(groupMd, vocab, vocabRecord, request);
+            List<String> titleStrings = vocabRecord.getFields()
                     .stream()
                     .filter(f -> f.getDefinition().isTitleField())
                     .map(f -> f.getValue())
@@ -321,7 +323,7 @@ public class Handlers {
         return null;
     }
 
-    private static void setAuthorityData(Metadata groupMd, Vocabulary vocab, VocabRecord record, HttpServletRequest request) {
+    private static void setAuthorityData(Metadata groupMd, Vocabulary vocab, VocabRecord vocabRecord, HttpServletRequest request) {
         log.debug("setAuthorityData is called");
         ConfigurationHelper helper = ConfigurationHelper.getInstance();
         boolean validGoobiAuthorityServer = StringUtils.isNoneBlank(helper.getGoobiAuthorityServerUser(), helper.getGoobiAuthorityServerUrl());
@@ -329,7 +331,7 @@ public class Handlers {
             String serverUrl = helper.getGoobiAuthorityServerUrl();
             String serverUser = helper.getGoobiAuthorityServerUser();
             groupMd.setAutorityFile("GOOBI_VOCABULARY", serverUrl,
-                    serverUrl + serverUser + "/vocabularies/" + record.getVocabularyId() + "/records/" + record.getId());
+                    serverUrl + serverUser + "/vocabularies/" + vocabRecord.getVocabularyId() + "/records/" + vocabRecord.getId());
         } else {
             String contextPath = request.getContextPath();
             String scheme = request.getScheme(); // http
@@ -340,7 +342,7 @@ public class Handlers {
             WebTarget base = client.target(reqUrl);
             WebTarget vocabularyBase = base.path("api").path("vocabulary");
             groupMd.setAutorityFile(vocab.getTitle(), vocabularyBase.getUri().toString(),
-                    vocabularyBase.getUri() + "/vocabularies/" + record.getVocabularyId() + "/" + record.getId());
+                    vocabularyBase.getUri() + "/vocabularies/" + vocabRecord.getVocabularyId() + "/" + vocabRecord.getId());
         }
         log.debug("setAuthorityData is exited");
     }
@@ -355,8 +357,7 @@ public class Handlers {
         return metadataTypeToMappingMap;
     }
 
-    private static void mergeMetadata(List<Column> colList, int processId)
-            throws ReadException, PreferencesException, WriteException, IOException, InterruptedException, SwapException, DAOException {
+    private static void mergeMetadata(List<Column> colList, int processId) throws ReadException, IOException, SwapException, PreferencesException {
         Process p = ProcessManager.getProcessById(processId);
         if (p == null) {
             return;
