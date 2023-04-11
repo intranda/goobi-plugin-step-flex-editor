@@ -346,7 +346,7 @@ public class Handlers {
     }
 
     private static Map<String, Mapping> createMetadataTypeToMappingMap(Field field) {
-        Map<String, Mapping> metadataTypeToMappingMap = new HashMap<String, Mapping>();
+        Map<String, Mapping> metadataTypeToMappingMap = new HashMap<>();
         for (GroupMapping gm : field.getGroupMappings()) {
             for (Mapping mapping : gm.getMappings()) {
                 metadataTypeToMappingMap.put(mapping.getMetadataType(), mapping);
@@ -374,61 +374,81 @@ public class Handlers {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
                     if (field.isMultiVocabulary()) {
-                        Map<String, GroupMapping> metadataGroupToGroupMapping = field.getGroupMappings()
-                                .stream()
-                                .collect(Collectors.toMap(GroupMapping::getGroupName, Function.identity()));
-                        List<MetadataGroup> groups = Optional
-                                .ofNullable(ds.getAllMetadataGroups())
-                                .orElse(new ArrayList<>());
-                        for (MetadataGroup mdg : groups) {
-                            GroupMapping gm = metadataGroupToGroupMapping.get(mdg.getType().getName());
-                            if (gm != null) {
-                                Map<String, String> values = new HashMap<String, String>();
-                                for (Metadata md : mdg.getMetadataList()) {
-                                    Optional<Mapping> insideGroupMapping = gm.getMappings()
-                                            .stream()
-                                            .filter(mapping -> mapping.getMetadataType().equals(md.getType().getName()))
-                                            .findAny();
-                                    if (insideGroupMapping.isPresent()) {
-                                        if (!StringUtils.isBlank(insideGroupMapping.get().getSourceVocabulary())
-                                                && !StringUtils.isBlank(md.getAuthorityValue())) {
-                                            values.put(insideGroupMapping.get().getMetadataType(),
-                                                    md.getAuthorityValue().replace(md.getAuthorityURI(), ""));
-                                        } else {
-                                            values.put(insideGroupMapping.get().getMetadataType(), md.getValue());
-                                        }
-                                    }
-                                }
-                                GroupValue groupValue = new GroupValue(gm.getGroupName(), values);
-                                field.getValues().add(new FieldValue(null, groupValue));
-                            }
-                        }
-                        if (field.getValues().size() > 0) {
-                            field.setShow(true);
-                        }
+                        mergeMultiVocabularyField(ds, field);
                     } else {
-                        String fieldMdt = field.getMetadatatype();
-                        if (fieldMdt == null || "unknown".equals(fieldMdt)) {
-                            continue;
-                        }
-                        //look up metadata of top DS and write value(s) to field
-                        MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
-                        if (mdt == null) {
-                            throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
-                        }
-                        @SuppressWarnings("unchecked")
-                        List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
-                        if (!metadataList.isEmpty()) {
-                            field.setShow(true);
-                        }
-                        for (Metadata md : metadataList) {
-                            String value = md.getValue();
-                            field.getValues().add(new FieldValue(value, null));
-                        }
+                        mergeSingleVocabularyField(prefs, ds, field);
                     }
                 }
             }
         }
-
     }
+
+    private static void mergeMultiVocabularyField(DocStruct ds, Field field) {
+        Map<String, GroupMapping> metadataGroupToGroupMapping = field.getGroupMappings()
+                .stream()
+                .collect(Collectors.toMap(GroupMapping::getGroupName, Function.identity()));
+        List<MetadataGroup> groups = Optional
+                .ofNullable(ds.getAllMetadataGroups())
+                .orElse(new ArrayList<>());
+        for (MetadataGroup mdg : groups) {
+            GroupMapping gm = metadataGroupToGroupMapping.get(mdg.getType().getName());
+            if (gm != null) {
+                Map<String, String> values = prepareValuesForGroupValue(mdg, gm);
+                GroupValue groupValue = new GroupValue(gm.getGroupName(), values);
+                field.getValues().add(new FieldValue(null, groupValue));
+            }
+        }
+
+        if (!field.getValues().isEmpty()) {
+            field.setShow(true);
+        }
+    }
+
+    private static void mergeSingleVocabularyField(Prefs prefs, DocStruct ds, Field field) throws PreferencesException {
+        String fieldMdt = field.getMetadatatype();
+        if (fieldMdt == null || "unknown".equals(fieldMdt)) {
+            return;
+        }
+        //look up metadata of top DS and write value(s) to field
+        MetadataType mdt = prefs.getMetadataTypeByName(fieldMdt);
+        if (mdt == null) {
+            throw new PreferencesException(String.format("There is no MetadataType with name '%s' in the rulest", fieldMdt));
+        }
+        @SuppressWarnings("unchecked")
+        List<Metadata> metadataList = (List<Metadata>) ds.getAllMetadataByType(mdt);
+        if (!metadataList.isEmpty()) {
+            field.setShow(true);
+        }
+        for (Metadata md : metadataList) {
+            String value = md.getValue();
+            field.getValues().add(new FieldValue(value, null));
+        }
+    }
+
+    private static Map<String, String> prepareValuesForGroupValue(MetadataGroup mdg, GroupMapping gm) {
+        Map<String, String> values = new HashMap<>();
+        for (Metadata md : mdg.getMetadataList()) {
+            Optional<Mapping> insideGroupMapping = gm.getMappings()
+                    .stream()
+                    .filter(mapping -> mapping.getMetadataType().equals(md.getType().getName()))
+                    .findAny();
+
+            if (insideGroupMapping.isEmpty()) {
+                continue;
+            }
+
+            Mapping mapping = insideGroupMapping.get();
+            String authorityValue = md.getAuthorityValue();
+
+            if (StringUtils.isNoneBlank(mapping.getSourceVocabulary(), authorityValue)) {
+                // the following statement is the reason why we get the string "/vocabularies/{vocabularyId}/{recordId}" at reloading previously saved provenances
+                values.put(mapping.getMetadataType(), authorityValue.replace(md.getAuthorityURI(), ""));
+            } else {
+                values.put(mapping.getMetadataType(), md.getValue());
+            }
+        }
+
+        return values;
+    }
+
 }
