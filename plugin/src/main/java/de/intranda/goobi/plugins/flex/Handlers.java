@@ -166,6 +166,12 @@ public class Handlers {
         return vocabRecord;
     };
 
+    /**
+     * read columns from configuration
+     * 
+     * @param conf
+     * @return list of Column objects
+     */
     private static List<Column> readColsFromConfig(XMLConfiguration conf) {
         conf.setExpressionEngine(new XPathExpressionEngine());
         List<Column> colList = new ArrayList<>();
@@ -178,6 +184,19 @@ public class Handlers {
         return colList;
     }
 
+    /**
+     * save the metadata
+     * 
+     * @param userInput input list of column objects from the user
+     * @param p Goobi process
+     * @param request HttpServletRequest object
+     * @throws ReadException
+     * @throws IOException
+     * @throws SwapException
+     * @throws PreferencesException
+     * @throws MetadataTypeNotAllowedException
+     * @throws WriteException
+     */
     private static void saveMetadata(List<Column> userInput, Process p, HttpServletRequest request)
             throws ReadException, IOException, SwapException, PreferencesException, MetadataTypeNotAllowedException, WriteException {
 
@@ -204,6 +223,15 @@ public class Handlers {
         p.writeMetadataFile(ff);
     }
 
+    /**
+     * process Multi-Vocabulary field object for saving
+     * 
+     * @param prefs Prefs
+     * @param ds DocStruct
+     * @param field Field that should be processed
+     * @param request HttpServletRequest
+     * @throws MetadataTypeNotAllowedException
+     */
     private static void processMultiVocabularyField(Prefs prefs, DocStruct ds, Field field, HttpServletRequest request)
             throws MetadataTypeNotAllowedException {
         Set<String> allGroups = field.getGroupMappings()
@@ -233,6 +261,15 @@ public class Handlers {
         }
     }
 
+    /**
+     * process Single-Vocabulary field object for saving
+     * 
+     * @param prefs Prefs
+     * @param ds DocStruct
+     * @param field Field that should be processed
+     * @throws PreferencesException
+     * @throws MetadataTypeNotAllowedException
+     */
     private static void processSingleVocabularyField(Prefs prefs, DocStruct ds, Field field)
             throws PreferencesException, MetadataTypeNotAllowedException {
         String fieldMdt = field.getMetadatatype();
@@ -265,6 +302,16 @@ public class Handlers {
         }
     }
 
+    /**
+     * prepare a Metadata object for the input MetadataGroup
+     * 
+     * @param newGroup MetadataGroup that should be added with the prepared Metadata object
+     * @param metadataTypeName name of the MetadataType based on which the Metadata object should be prepared
+     * @param recordId id of the record that should be retrieved
+     * @param metadataTypeToMappingMap Map from MetadataTypes' names to Mapping objects
+     * @param request HttpServletRequest
+     * @throws MetadataTypeNotAllowedException
+     */
     private static void prepareMetadataGivenTypeName(MetadataGroup newGroup, String metadataTypeName, String recordId,
             Map<String, Mapping> metadataTypeToMappingMap, HttpServletRequest request) throws MetadataTypeNotAllowedException {
         log.debug("metadataTypeName = " + metadataTypeName);
@@ -296,6 +343,14 @@ public class Handlers {
         log.debug(groupMd.getValue());
     }
 
+    /**
+     * create a Metadata object given the input metadataTypeName, and add it to the input MetadataGroup newGroup
+     * 
+     * @param newGroup MetadataGroup that should be added with the new Metadata object
+     * @param metadataTypeName name of the MetadataType based on which the Metadata object should be created
+     * @return the new Metadata object
+     * @throws MetadataTypeNotAllowedException
+     */
     private static Metadata createMetadataObject(MetadataGroup newGroup, String metadataTypeName) throws MetadataTypeNotAllowedException {
         for (MetadataType mdType : newGroup.getAddableMetadataTypes(false)) {
             log.debug("mdType = " + mdType.getName());
@@ -323,6 +378,14 @@ public class Handlers {
         return null;
     }
 
+    /**
+     * set authority data to the input Metadata object
+     * 
+     * @param groupMd the Metadata object whose authority data should be set
+     * @param vocab Vocabulary
+     * @param vocabRecord VocabRecord
+     * @param request HttpServletRequest
+     */
     private static void setAuthorityData(Metadata groupMd, Vocabulary vocab, VocabRecord vocabRecord, HttpServletRequest request) {
         log.debug("setAuthorityData is called");
         ConfigurationHelper helper = ConfigurationHelper.getInstance();
@@ -347,6 +410,12 @@ public class Handlers {
         log.debug("setAuthorityData is exited");
     }
 
+    /**
+     * create a map from MetadataTypes' names to Mapping objects
+     * 
+     * @param field Field object
+     * @return a map from MetadataTypes' names to Mapping objects
+     */
     private static Map<String, Mapping> createMetadataTypeToMappingMap(Field field) {
         Map<String, Mapping> metadataTypeToMappingMap = new HashMap<>();
         for (GroupMapping gm : field.getGroupMappings()) {
@@ -357,6 +426,16 @@ public class Handlers {
         return metadataTypeToMappingMap;
     }
 
+    /**
+     * merge all saved Metadata
+     * 
+     * @param colList list of Column objects
+     * @param processId id of the Goobi process
+     * @throws ReadException
+     * @throws IOException
+     * @throws SwapException
+     * @throws PreferencesException
+     */
     private static void mergeMetadata(List<Column> colList, int processId) throws ReadException, IOException, SwapException, PreferencesException {
         Process p = ProcessManager.getProcessById(processId);
         if (p == null) {
@@ -384,6 +463,12 @@ public class Handlers {
         }
     }
 
+    /**
+     * merge multi-vocabulary fields
+     * 
+     * @param ds DocStruct
+     * @param field Field
+     */
     private static void mergeMultiVocabularyField(DocStruct ds, Field field) {
         Map<String, GroupMapping> metadataGroupToGroupMapping = field.getGroupMappings()
                 .stream()
@@ -405,6 +490,14 @@ public class Handlers {
         }
     }
 
+    /**
+     * merge single vocabulary fields
+     * 
+     * @param prefs Prefs
+     * @param ds DocStruct
+     * @param field Field
+     * @throws PreferencesException
+     */
     private static void mergeSingleVocabularyField(Prefs prefs, DocStruct ds, Field field) throws PreferencesException {
         String fieldMdt = field.getMetadatatype();
         if (fieldMdt == null || "unknown".equals(fieldMdt)) {
@@ -426,6 +519,13 @@ public class Handlers {
         }
     }
 
+    /**
+     * perpare the field "values" for the GroupValue object
+     * 
+     * @param mdg MetadataGroup
+     * @param gm GroupMapping
+     * @return a Map that shall be used as the field "values" of a GroupValue object
+     */
     private static Map<String, String> prepareValuesForGroupValue(MetadataGroup mdg, GroupMapping gm) {
         Map<String, String> values = new HashMap<>();
         for (Metadata md : mdg.getMetadataList()) {
