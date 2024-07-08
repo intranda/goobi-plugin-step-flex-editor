@@ -5,7 +5,7 @@ module.exports = {
     entry: './main.js',
     mode: "development",
     output: {
-        path: path.resolve(__dirname, '../src/main/resources/frontend/js/'),
+        path: path.resolve(__dirname, 'resources/dist/intranda_step_flex-editor/js/'),
         filename: 'app.js'
     },
     module: {
