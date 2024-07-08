@@ -1,24 +1,25 @@
 package de.intranda.goobi.plugins;
 
-import java.nio.file.Path;
-import java.util.HashMap;
-
-import org.goobi.beans.Step;
-import org.goobi.production.enums.PluginGuiType;
-import org.goobi.production.enums.PluginType;
-import org.goobi.production.enums.StepReturnValue;
-import org.goobi.production.plugin.interfaces.IRestGuiPlugin;
-
 import de.intranda.goobi.plugins.flex.Routes;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
+import org.goobi.beans.Step;
+import org.goobi.production.enums.PluginGuiType;
+import org.goobi.production.enums.PluginType;
+import org.goobi.production.enums.StepReturnValue;
+import org.goobi.production.plugin.interfaces.IGuiPlugin;
+import org.goobi.production.plugin.interfaces.IRestPlugin;
+import org.goobi.production.plugin.interfaces.IStepPlugin;
 import spark.Service;
+
+import java.nio.file.Path;
+import java.util.HashMap;
 
 @Data
 @PluginImplementation
 @Log4j2
-public class FlexEditor implements IRestGuiPlugin {
+public class FlexEditor implements IGuiPlugin, IStepPlugin, IRestPlugin {
     private Step step;
     private String returnPath;
     public static final String TITLE = "intranda_step_flex-editor";
@@ -41,7 +42,7 @@ public class FlexEditor implements IRestGuiPlugin {
     @Override
     public String getPagePath() {
         log.debug("FlexEditor::getPagePath is called");
-        return "/uii/guiPlugin.xhtml";
+        return "/uii/guiPluginNew.xhtml";
     }
 
     @Override
@@ -75,13 +76,8 @@ public class FlexEditor implements IRestGuiPlugin {
     }
 
     @Override
-    public void extractAssets(Path arg0) {
-        //nothing to do here - doesn't work anyway
-    }
-
-    @Override
     public String[] getJsPaths() {
-        return new String[] { "js/app.js" };
+        return new String[] { "app.js" };
     }
 
     @Override
