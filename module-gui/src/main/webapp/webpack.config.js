@@ -1,27 +1,13 @@
 const path = require("path")
-const FileManagerPlugin = require('filemanager-webpack-plugin');
 const webpack = require("webpack")
 
 module.exports = {
-    watch: true,
     entry: './main.js',
     mode: "development",
     output: {
-        path: path.resolve(__dirname, '../src/main/resources/frontend/js/'),
+        path: path.resolve(__dirname, 'resources/dist/intranda_step_flex-editor/js/'),
         filename: 'app.js'
     },
-    plugins: [
-      new FileManagerPlugin({
-        onEnd: {
-          copy: [
-            {
-              source: '../src/main/resources/frontend/**', 
-              destination: '/opt/digiverso/goobi/static_assets/plugins/intranda_step_flex-editor/'
-            }
-          ]
-        }
-      })
-    ],
     module: {
       rules: [
         {

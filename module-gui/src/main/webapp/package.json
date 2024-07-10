@@ -4,12 +4,15 @@
   "description": "JS frontend for metadata editor light",
   "main": "main.js",
   "scripts": {
+    "build": "webpack",
+    "dev": "webpack --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Oliver Paetzel",
   "license": "GPL-2.0-or-later",
   "dependencies": {
-    "riot": "^4.8.9"
+    "riot": "^4.8.9",
+    "webpack-cli": "^5.1.4"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
@@ -17,7 +20,6 @@
     "@riotjs/compiler": "^4.5.5",
     "@riotjs/webpack-loader": "^4.0.1",
     "babel-loader": "^8.0.6",
-    "filemanager-webpack-plugin": "^2.0.5",
-    "webpack": "^4.34.0"
+    "webpack": "^5.92.1"
   }
 }
