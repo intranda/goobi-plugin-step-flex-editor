@@ -45,7 +45,7 @@ The configuration file describes the structure of the user interface as seen in 
 
 | Parameter          | Explanation                                                                                     |
 |--------------------|-------------------------------------------------------------------------------------------------|
-| `Input`            | A single-line input field used for capturing simple text inputs. A metadata type must also be specified. |
+| `INPUT`            | A single-line input field used for capturing simple text inputs. A metadata type must also be specified. |
 | `TEXTAREA`         | A multi-line input field. Specifying a metadata type is also required.                           |
 | `BOOLEAN`          | A checkbox used for yes/no decisions or binary options. A metadata type must also be specified.  |
 | `DROPDOWN`         | A dropdown menu with values sourced from the predefined vocabulary. In addition to the metadata type, the name of the vocabulary to be used must be specified. |
