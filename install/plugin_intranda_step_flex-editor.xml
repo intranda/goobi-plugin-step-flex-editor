@@ -1,0 +1,46 @@
+<config>
+    <column>
+        <box name="bla 1">
+            <field type="MULTISELECT" defaultDisplay="true">
+                <metadatatype>unknown</metadatatype>
+                <name>My multi select field</name>
+                <sourceVocabulary>testVocabforDropdown</sourceVocabulary>
+            </field>
+            <field type="INPUT">
+                <metadatatype>unknown</metadatatype>
+                <name>My input field</name>
+            </field>
+        </box>
+    </column>
+    <column>
+        <box name="bla 2">
+            <field type="TEXTAREA">
+                <metadatatype>unknown</metadatatype>
+                <name>My textarea</name>
+            </field>
+        </box>
+    </column>
+    <column>
+        <box name="bla 3">
+            <field type="BOOLEAN">
+                <metadatatype>unknown</metadatatype>
+                <name>My checkbox</name>
+            </field>
+            <field type="TEXTAREA">
+                <metadatatype>unknown</metadatatype>
+                <name>My textarea</name>
+            </field>
+            <field type="DROPDOWN">
+                <metadatatype>unknown</metadatatype>
+                <name>My dropdown</name>
+                <sourceVocabulary>testVocabforDropdown</sourceVocabulary>
+            </field>
+        </box>
+        <box name="bla 5">
+            <field type="TEXTAREA">
+                <metadatatype>unknown</metadatatype>
+                <name>My textarea</name>
+            </field>
+        </box>
+    </column>
+</config>
