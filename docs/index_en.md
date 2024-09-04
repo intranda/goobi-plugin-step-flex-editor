@@ -1,7 +1,7 @@
 ---
 title: Flex Editor
 identifier: intranda_step_flex_editor
-description: Step Plugin for the dynamic adjustment of user interfaces
+description: Step plugin for the dynamic customisation of data entry masks for metadata
 published: true
 ---
 
@@ -11,7 +11,7 @@ This plugin enables dynamic customization of the user interface, allowing specif
 ## Installation
 This plugin is delivered as a tar archive. To install it, the archive `plugin_intranda_step_flex-editor.tar` must be extracted into the Goobi directory:
 
-```
+```bash
 tar -C /opt/digiverso/goobi/ -xf plugin_intranda_step_flex-editor.tar --exclude="pom.xml"
 ```
 
@@ -33,15 +33,15 @@ The Flex Editor for Goobi Workflow allows flexible customization of the metadata
 ![Example appearance of a customized metadata input interface](screen4_de.png)
 
 
-## Confifiguration
+## Configuration
 
-The plugin is configured using the file plugin_intranda_step_flex-editor.xml as shown here:
+The plugin is configured using the file `plugin_intranda_step_flex-editor.xml` as shown here:
 
 {{CONFIG_CONTENT}}
 
 {{CONFIG_DESCRIPTION_PROJECT_STEP}}
 
-The configuration file describes the structure of the user interface as seen in Goobi. The configuration consists of multiple <column> elements, each representing a column in the interface. Within the <column> elements, there are <box> elements that group multiple metadata fields into a box within the interface. Inside the <box> elements are <field> elements, representing a metadata field in the process. The <field> elements can have different types, giving them specific functionality in the user interface:
+The configuration file describes the structure of the user interface as seen in Goobi. The configuration consists of multiple `<column>` elements, each representing a column in the interface. Within the `<column>` elements, there are `<box>` elements that group multiple metadata fields into a box within the interface. Inside the `<box>` elements are `<field>` elements, representing a metadata field in the process. The `<field>` elements can have different types, giving them specific functionality in the user interface:
 
 | Parameter          | Explanation                                                                                     |
 |--------------------|-------------------------------------------------------------------------------------------------|
