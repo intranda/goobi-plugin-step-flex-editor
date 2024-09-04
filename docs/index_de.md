@@ -43,7 +43,7 @@ Die Konfigurationsdatei beschreibt den Aufbau der in Goobi zu sehenden Nutzerobe
 
 Parameter               | Erläuterung
 ------------------------|------------------------------------
-`Input`                      | Ein einzeiliges Eingabefeld, das verwendet wird, um einfache Texteingaben zu erfassen. Es muss immer auch ein Metadatentyp angegeben werden. |
+`INPUT`                      | Ein einzeiliges Eingabefeld, das verwendet wird, um einfache Texteingaben zu erfassen. Es muss immer auch ein Metadatentyp angegeben werden. |
 `TEXTAREA`                      | Hierbei handelt es sich um ein mehrzeiliges Eingabefeld. Auch hier ist die Angabe eines Metadatentyps erforderlich. |
 `BOOLEAN`                      | Eine Checkbox, die für Ja/Nein-Entscheidungen oder binäre Optionen verwendet wird. Ein Metadatentyp muss ebenfalls angegeben werden. |
 `DROPDOWN`                      | Ein Dropdown-Menü, dessen Werte aus dem vorgegebenen Vokabular stammen. Zusätzlich zum Metadatentyp muss der Name des zu verwendenden Vokabulars angegeben werden. |
