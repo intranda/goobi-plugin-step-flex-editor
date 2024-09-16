@@ -12,14 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -27,8 +24,6 @@ import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.goobi.beans.Process;
 import org.goobi.beans.Ruleset;
-import org.goobi.vocabulary.VocabRecord;
-import org.goobi.vocabulary.Vocabulary;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -42,11 +37,20 @@ import de.intranda.goobi.plugins.flex.model.GroupMapping;
 import de.intranda.goobi.plugins.flex.model.GroupValue;
 import de.intranda.goobi.plugins.flex.model.ImagesResponse;
 import de.intranda.goobi.plugins.flex.model.Mapping;
+import de.intranda.goobi.plugins.flex.model.json.vocabulary.JsonVocabulary;
+import de.intranda.goobi.plugins.flex.model.json.vocabulary.JsonVocabularyField;
+import de.intranda.goobi.plugins.flex.model.json.vocabulary.JsonVocabularyRecord;
+import de.intranda.goobi.plugins.flex.model.json.vocabulary.VocabularyBuilder;
 import de.sub.goobi.config.ConfigPlugins;
-import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
-import de.sub.goobi.persistence.managers.VocabularyManager;
+import de.unigoettingen.sub.commons.contentlib.exceptions.IllegalRequestException;
+import io.goobi.vocabulary.exchange.FieldDefinition;
+import io.goobi.vocabulary.exchange.FieldInstance;
+import io.goobi.vocabulary.exchange.VocabularySchema;
+import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabulary;
+import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabularyRecord;
 import lombok.extern.log4j.Log4j2;
 import spark.Route;
 import ugh.dl.Corporate;
@@ -70,6 +74,9 @@ public class Handlers {
     private static Type columnListType = TypeToken.getParameterized(List.class, Column.class).getType();
     private static final String STRING_PROCESS_ID = "processid";
 
+    private static final VocabularyAPIManager vocabularyAPI = VocabularyAPIManager.getInstance();
+    private static final VocabularyBuilder vocabularyBuilder = new VocabularyBuilder(vocabularyAPI);
+
     private Handlers() {
         // hide the implicit constructor
     }
@@ -77,34 +84,38 @@ public class Handlers {
     public static final Route allVocabs = (req, res) -> {
         XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.TITLE);
         List<Column> colList = readColsFromConfig(conf);
-        Map<String, Vocabulary> vocabMap = new TreeMap<>();
+
+        Set<String> vocabNames = new TreeSet<String>();
         for (Column col : colList) {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
 
                     for (String vocabName : field.getSourceVocabularies()) {
-                        if (vocabName != null && !vocabMap.containsKey(vocabName)) {
-                            Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
-                            VocabularyManager.getAllRecords(vocab);
-                            vocabMap.put(vocabName, vocab);
+                        if (vocabName != null) {
+                            vocabNames.add(vocabName);
                         }
                     }
 
                     for (GroupMapping gm : field.getGroupMappings()) {
                         for (Mapping mapping : gm.getMappings()) {
                             String vocabName = mapping.getSourceVocabulary();
-                            if (vocabName != null && !vocabMap.containsKey(vocabName)) {
-                                Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
-                                if (vocab != null) {
-                                    VocabularyManager.getAllRecords(vocab);
-                                    vocabMap.put(vocabName, vocab);
-                                }
+                            if (vocabName != null) {
+                                vocabNames.add(vocabName);
                             }
                         }
                     }
                 }
             }
         }
+
+        Map<String, JsonVocabulary> vocabMap = new HashMap<>();
+        vocabularyAPI.vocabularies().all().forEach(vocab -> {
+            if (vocabNames.contains(vocab.getName())) {
+                JsonVocabulary jsonVocab = vocabularyBuilder.buildVocabulary(vocab);
+                vocabMap.put(vocab.getName(), jsonVocab);
+            }
+        });
+
         return vocabMap;
     };
 
@@ -157,13 +168,31 @@ public class Handlers {
 
     public static final Route newVocabEntry = (req, res) -> {
         String vocabName = req.params("vocabName");
-        Vocabulary vocab = VocabularyManager.getVocabularyByTitle(vocabName);
-        VocabRecord vocabRecord = gson.fromJson(req.body(), VocabRecord.class);
-        for (int i = 0; i < vocabRecord.getFields().size(); i++) {
-            vocabRecord.getFields().get(i).setDefinition(vocab.getStruct().get(i));
+        ExtendedVocabulary vocab = vocabularyAPI.vocabularies().findByName(vocabName);
+        VocabularySchema schema = vocabularyAPI.vocabularySchemas().getSchema(vocab);
+
+        JsonVocabularyRecord jsonRecord = gson.fromJson(req.body(), JsonVocabularyRecord.class);
+
+        ExtendedVocabularyRecord record = vocabularyAPI.vocabularyRecords().createEmptyRecord(vocab.getId(), null, false);
+
+        List<FieldInstance> fields = new ArrayList<>();
+        for (int i = 0; i < jsonRecord.getFields().size(); i++) {
+            JsonVocabularyField jsonField = jsonRecord.getFields().get(i);
+            FieldDefinition definition =
+                    schema.getDefinitions()
+                            .stream()
+                            .filter(def -> def.getId() == jsonField.getDefinitionId())
+                            .findAny()
+                            .orElseThrow(() -> new IllegalRequestException("No vocabulary field definition with id " + jsonField.getDefinitionId()));
+
+            record.getFieldForDefinitionName(jsonField.getLabel()).ifPresent(fieldInstance -> {
+                fieldInstance.setFieldValue(jsonField.getValue());
+            });
         }
-        VocabularyManager.saveRecord(vocab.getId(), vocabRecord);
-        return vocabRecord;
+
+        record = vocabularyAPI.vocabularyRecords().save(record);
+
+        return vocabularyBuilder.buildRecord(record);
     };
 
     /**
@@ -323,24 +352,14 @@ public class Handlers {
         if (groupMd == null) {
             return;
         }
-        // check Vocabulary to set value to groupMd
-        Mapping mapping = metadataTypeToMappingMap.get(metadataTypeName);
-        if (mapping.getSourceVocabulary() != null) {
-            Vocabulary vocab = VocabularyManager.getVocabularyByTitle(mapping.getSourceVocabulary());
-            log.debug("vocab.getId() = " + vocab.getId());
-            VocabRecord vocabRecord = VocabularyManager.getRecord(vocab.getId(), Integer.parseInt(recordId));
-            log.debug("record.getId() = " + vocabRecord.getId());
-            setAuthorityData(groupMd, vocab, vocabRecord, request);
-            List<String> titleStrings = vocabRecord.getFields()
-                    .stream()
-                    .filter(f -> f.getDefinition().isTitleField())
-                    .map(f -> f.getValue())
-                    .collect(Collectors.toList());
-            groupMd.setValue(StringUtils.join(titleStrings, " "));
-        } else {
-            groupMd.setValue(recordId);
+
+        if (recordId != null && recordId.matches("\\d+")) {
+
+            ExtendedVocabularyRecord record = vocabularyAPI.vocabularyRecords().get(Long.parseLong(recordId));
+            if (record != null) {
+                record.writeReferenceMetadata(groupMd);
+            }
         }
-        log.debug(groupMd.getValue());
     }
 
     /**
@@ -376,38 +395,6 @@ public class Handlers {
             }
         }
         return null;
-    }
-
-    /**
-     * set authority data to the input Metadata object
-     * 
-     * @param groupMd the Metadata object whose authority data should be set
-     * @param vocab Vocabulary
-     * @param vocabRecord VocabRecord
-     * @param request HttpServletRequest
-     */
-    private static void setAuthorityData(Metadata groupMd, Vocabulary vocab, VocabRecord vocabRecord, HttpServletRequest request) {
-        log.debug("setAuthorityData is called");
-        ConfigurationHelper helper = ConfigurationHelper.getInstance();
-        boolean validGoobiAuthorityServer = StringUtils.isNoneBlank(helper.getGoobiAuthorityServerUser(), helper.getGoobiAuthorityServerUrl());
-        if (validGoobiAuthorityServer) {
-            String serverUrl = helper.getGoobiAuthorityServerUrl();
-            String serverUser = helper.getGoobiAuthorityServerUser();
-            groupMd.setAutorityFile("GOOBI_VOCABULARY", serverUrl,
-                    serverUrl + serverUser + "/vocabularies/" + vocabRecord.getVocabularyId() + "/records/" + vocabRecord.getId());
-        } else {
-            String contextPath = request.getContextPath();
-            String scheme = request.getScheme(); // http
-            String serverName = request.getServerName(); // hostname.com
-            int serverPort = request.getServerPort(); // 80
-            String reqUrl = scheme + "://" + serverName + ":" + serverPort + contextPath;
-            Client client = ClientBuilder.newClient();
-            WebTarget base = client.target(reqUrl);
-            WebTarget vocabularyBase = base.path("api").path("vocabulary");
-            groupMd.setAutorityFile(vocab.getTitle(), vocabularyBase.getUri().toString(),
-                    vocabularyBase.getUri() + "/vocabularies/" + vocabRecord.getVocabularyId() + "/" + vocabRecord.getId());
-        }
-        log.debug("setAuthorityData is exited");
     }
 
     /**
