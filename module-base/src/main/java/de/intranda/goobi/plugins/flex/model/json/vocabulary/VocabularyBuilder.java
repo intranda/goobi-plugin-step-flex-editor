@@ -1,12 +1,10 @@
 package de.intranda.goobi.plugins.flex.model.json.vocabulary;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.goobi.vocabulary.exchange.FieldDefinition;
-import io.goobi.vocabulary.exchange.VocabularySchema;
 import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
 import io.goobi.workflow.api.vocabulary.helper.ExtendedFieldInstance;
 import io.goobi.workflow.api.vocabulary.helper.ExtendedFieldValue;
@@ -23,18 +21,30 @@ public class VocabularyBuilder {
 
     public JsonVocabulary buildVocabulary(ExtendedVocabulary orig) {
 
-        Long id = orig.getId();
-        String title = orig.getName();
-        String description = orig.getDescription();
+        try {
+            Long id = orig.getId();
+            String title = orig.getName();
+            String description = orig.getDescription();
 
-        List<FieldDefinition> fieldDefinitions =
-                vocabManager.vocabularySchemas().getMetadataSchema(orig).map(VocabularySchema::getDefinitions).orElse(Collections.emptyList());
-        List<JsonVocabularyStructure> structs = fieldDefinitions.stream().map(this::getStructure).collect(Collectors.toList());
+            List<FieldDefinition> fieldDefinitions =
+                    vocabManager.vocabularySchemas().getSchema(orig).getDefinitions();
+            List<JsonVocabularyStructure> structs = fieldDefinitions.stream().map(this::getStructure).collect(Collectors.toList());
 
-        List<JsonVocabularyRecord> records =
-                vocabManager.vocabularyRecords().list(id).all().request().getContent().stream().map(this::buildRecord).collect(Collectors.toList());
+            List<JsonVocabularyRecord> records =
+                    vocabManager.vocabularyRecords()
+                            .list(id)
+                            .all()
+                            .request()
+                            .getContent()
+                            .stream()
+                            .map(this::buildRecord)
+                            .collect(Collectors.toList());
 
-        return new JsonVocabulary(id, title, description, structs, records);
+            return new JsonVocabulary(id, title, description, structs, records);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return null;
+        }
 
     }
 
