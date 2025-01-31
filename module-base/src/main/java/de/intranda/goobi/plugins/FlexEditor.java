@@ -1,6 +1,5 @@
 package de.intranda.goobi.plugins;
 
-import de.intranda.goobi.plugins.flex.Routes;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
@@ -9,17 +8,14 @@ import org.goobi.production.enums.PluginGuiType;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IGuiPlugin;
-import org.goobi.production.plugin.interfaces.IRestPlugin;
 import org.goobi.production.plugin.interfaces.IStepPlugin;
-import spark.Service;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 
 @Data
 @PluginImplementation
 @Log4j2
-public class FlexEditor implements IGuiPlugin, IStepPlugin, IRestPlugin {
+public class FlexEditor implements IGuiPlugin, IStepPlugin {
     private Step step;
     private String returnPath;
     public static final String TITLE = "intranda_step_flex-editor";
@@ -79,12 +75,4 @@ public class FlexEditor implements IGuiPlugin, IStepPlugin, IRestPlugin {
     public String[] getJsPaths() {
         return new String[] { "app.js" };
     }
-
-    @Override
-    public void initRoutes(Service http) {
-        log.debug("FlexEditor::initRoutes is called");
-        log.debug("http = " + http);
-        Routes.initRoutes(http);
-    }
-
 }

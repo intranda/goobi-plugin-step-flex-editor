@@ -77,6 +77,7 @@
 </style>
 
 <script>
+	const goobi_path = location.pathname.split('/')[1];
 export default {
 	/* triggered before mounting */
     onBeforeMount(state, props) {
@@ -132,7 +133,7 @@ export default {
     saveNewEntry() {
     	console.log("props", this.props);
     	console.log(this.state.struct);
-    	fetch(`/goobi/plugins/ce/vocabularies/${this.props.vocabname}/records`, {
+    	fetch(`/${goobi_path}/api/plugins/flexeditor/vocabularies/${this.props.vocabname}/records`, {
     		method: "POST",
     		body: JSON.stringify({fields: this.state.fields})
     	}).then(resp => {

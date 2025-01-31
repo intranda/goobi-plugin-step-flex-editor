@@ -52,13 +52,14 @@
   import Box from './box.tag';
   import Preview from './preview.tag';
   import Imagemodal from './imagemodal.tag';
+  const goobi_path = location.pathname.split('/')[1];
   export default {
     components: {
       Box,
       Preview,
       Imagemodal
     },
-    
+
     /* triggered before mounting */
     onBeforeMount(props, state) {
       this.state = {
@@ -72,7 +73,7 @@
           images: []
       };
       
-      fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/mets`).then(resp => {
+      fetch(`/${goobi_path}/api/plugins/flexeditor/process/${props.goobi_opts.processId}/mets`).then(resp => {
 		resp.json().then(json => {
 			this.state.boxes = json;
 			this.state.boxesLoaded = true;
@@ -83,7 +84,7 @@
 		});
       });
       
-      fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/images`).then(resp => {
+      fetch(`/${goobi_path}/api/plugins/flexeditor/process/${props.goobi_opts.processId}/images`).then(resp => {
   		resp.json().then(json => {
   			this.state.images = json.imageNames;
   			this.state.imageFolder = json.folder;
@@ -94,7 +95,7 @@
   		});
       });
       
-      fetch(`/goobi/plugins/ce/vocabularies`).then(resp => {
+      fetch(`/${goobi_path}/api/plugins/flexeditor/vocabularies`).then(resp => {
 		resp.json().then(json => {
 			this.state.vocabularies = json;
 			console.log(this.state.vocabularies);
@@ -106,7 +107,7 @@
 		});
       });
       
-      fetch(`/goobi/api/messages/${props.goobi_opts.language}`, {
+      fetch(`/${goobi_path}/api/messages/${props.goobi_opts.language}`, {
           method: 'GET',
           credentials: 'same-origin'
       }).then(resp => {
@@ -118,7 +119,7 @@
       
       console.log(props);
       
-      fetch(`/goobi/plugins/ce/process/${props.goobi_opts.processId}/ruleset/messages/${props.goobi_opts.language}`, {
+      fetch(`/${goobi_path}/api/plugins/flexeditor/process/${props.goobi_opts.processId}/ruleset/messages/${props.goobi_opts.language}`, {
           method: 'GET',
           credentials: 'same-origin'
       }).then(resp => {
@@ -145,7 +146,7 @@
     
     /* triggered when the button `Speichern` is clicked */
     save() {
-    	fetch(`/goobi/plugins/ce/process/${this.props.goobi_opts.processId}/mets`, {
+    	fetch(`/${goobi_path}/api/plugins/flexeditor/process/${this.props.goobi_opts.processId}/mets`, {
     		method: "POST",
     		body: JSON.stringify(this.state.boxes)
     	}).catch(err => {
@@ -155,7 +156,7 @@
     
     /* triggered when the button `Speichern und verlassen` is clicked */
     saveAndExit() {
-    	fetch(`/goobi/plugins/ce/process/${this.props.goobi_opts.processId}/mets`, {
+    	fetch(`/${goobi_path}/api/plugins/flexeditor/process/${this.props.goobi_opts.processId}/mets`, {
     		method: "POST",
     		body: JSON.stringify(this.state.boxes)
     	}).then( r => {

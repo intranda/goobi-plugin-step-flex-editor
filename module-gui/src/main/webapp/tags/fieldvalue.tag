@@ -164,7 +164,9 @@
 		    	var field = this.props.field;
 		        if(field.sourceVocabularies && field.sourceVocabularies.length > 0 && this.state) {
 		            this.state.vocab = this.props.vocabularies[field.sourceVocabularies] || {stub: true, struct: [], records: [{fields:[]}]};
-		            if(this.state.vocab.stub) {
+					console.log(field.sourceVocabularies);
+					console.log(this.props.vocabularies[field.sourceVocabularies]);
+					if(this.state.vocab.stub) {
 		            	this.state.vocabError = `Vocabulary "${field.sourceVocabularies}" was not found`;
 		            	if(update) {
 		            		this.update();
