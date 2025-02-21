@@ -3,9 +3,10 @@
 <project name="goobi-plugin-step-mixedocr" default="devbuild">
 	<target name="devbuild">
 		<exec executable="mvn">
-			<arg value="package" />
+			<arg value="package"/>
 		</exec>
-		<copy file="target/plugin_intranda_step_flex-editor.jar" todir="/opt/digiverso/goobi/plugins/step/"/>
+		<copy file="module-base/target/plugin-step-flex-editor-base.jar" todir="/opt/digiverso/goobi/plugins/step/"/>
+		<copy file="module-gui/target/plugin-step-flex-editor-gui.jar" todir="/opt/digiverso/goobi/plugins/GUI/"/>
 		<exec executable="curl">
 			<arg value="-X"/>
 			<arg value="PUT"/>
