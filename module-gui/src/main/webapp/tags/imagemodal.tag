@@ -1,48 +1,48 @@
 <imagemodal>
 	<!-- hide is defined in app.tag as hideImages -->
 	<div class="my-modal-bg" onclick={props.hide}>
-		<div class="box box-color box-bordered" onclick={ e => e.stopPropagation()}>
-			
+		<div class="box box--primary" onclick={ e => e.stopPropagation()}>
+
 			<!-- BOX TITLE -->
-			<div class="box-title">
+			<div class="box__title">
 				<span>Bildanzeige</span>
 				<!-- hide is defined in app.tag as hideImages -->
 				<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
 			</div>
 			<!-- // BOX TITLE -->
-			
+
 			<!-- BOX CONTENT -->
-			<div class="box-content">
+			<div class="flow">
 				<!-- IMAGE -->
 				<div class="image-container">
 					<img src={state.imageSource}></img>
 				</div>
 				<!-- // IMAGE -->
-				
+
 				<!-- BUTTONS to change pages -->
 				<div class="paginator">
 					<button class="btn" onclick={firstPage}>
-						<i class="fa fa-angle-double-left"></i>
+						<span class="fa fa-angle-double-left" aria-hidden="true" />
 					</button>
 					<button class="btn btn-primary" onclick={prevPage}>
-						<i class="fa fa-angle-left" aria-hidden="true"></i>
+						<span class="fa fa-angle-left" aria-hidden="true" />
 						<span>{msg('previousImage')}</span>
 					</button>
 					<span class="current-page">{msg('seite')} {state.currentPageNumber + 1} {msg('von')} {props.images.length}</span>
 					<button class="btn btn-primary" onclick={nextPage}>
 						<span>{msg('nextImage')}</span>
-						<i class="fa fa-angle-right" aria-hidden="true"></i>
+						<span class="fa fa-angle-right" aria-hidden="true" />
 					</button>
 					<button class="btn" onclick={lastPage}>
-						<i class="fa fa-angle-double-right"></i>
+						<span class="fa fa-angle-double-right" aria-hidden="true" />
 					</button>
 				</div>
 				<!-- // BUTTONS -->
 			</div>
 			<!-- BOX CONTENT -->
 		</div>
-	</div>	
-	
+	</div>
+
 	<style>
 		.my-modal-bg {
 			display: flex;
@@ -79,7 +79,6 @@
 		.paginator {
 			display: flex;
 			justify-content: center;
-			margin-top: 15px;
 		}
 		.paginator .btn {
 			margin-right: 5px;
@@ -96,7 +95,7 @@
             margin-left: 5px;
         }
 	</style>
-	
+
 	<script>
 		const goobi_path = location.pathname.split('/')[1];
 		export default {
@@ -105,18 +104,18 @@
 				this.listenerFunction = this.keyListener.bind(this);
 				document.addEventListener("keyup", this.listenerFunction);
 			},
-			
+
 			/* triggered after mounted */
 			onMounted() {
 				this.state.currentPageNumber = 0;
 				this.setImageSource();
 			},
-			
+
 			/* triggered before unmounting */
 			onBeforeUnmount() {
 		    	document.removeEventListener("keyup", this.listenerFunction);
 		    },
-		    
+
 		    /* listener function of keys */
 		    keyListener(e) {
 		    	if(e.key == "Escape") {
@@ -124,36 +123,36 @@
 		    		this.props.hide();
 		    	}
 		    },
-		    
+
 		    /* used to retrieve values from msg */
 			msg(key) {
 				return this.props.msg(key);
 			},
-			
+
 			/* triggered when the button `<<` is clicked */
 			firstPage() {
 				this.state.currentPageNumber = 0;
 				this.setImageSource();
 			},
-			
+
 			/* triggered when the button `< Vorheriges Bild` is clicked */
 			prevPage() {
 				this.state.currentPageNumber = Math.max(0, this.state.currentPageNumber-1);
-				this.setImageSource();	
+				this.setImageSource();
 			},
-			
+
 			/* triggered when the button `N�chstes Bild >` is clicked */
 			nextPage() {
 				this.state.currentPageNumber = Math.min(this.props.images.length-1, this.state.currentPageNumber+1);
-				this.setImageSource();				
+				this.setImageSource();
 			},
-			
+
 			/* triggered when the button `>>` is clicked */
 			lastPage() {
 				this.state.currentPageNumber = this.props.images.length-1;
 				this.setImageSource();
 			},
-			
+
 			/* used to set the source of the image to be shown */
 			setImageSource() {
 				var imageName = this.props.images[this.state.currentPageNumber];

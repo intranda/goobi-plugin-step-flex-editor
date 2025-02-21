@@ -1,53 +1,90 @@
 <app>
-	<div class="row">
-		<div class="col-md-4">
-			<Box each={box in state.boxes[0].boxes} box={box} vocabularies={state.vocabularies} msg={msg}></Box>
-		</div>
-		<div class="col-md-4">
-			<Box each={box in state.boxes[1].boxes} box={box} vocabularies={state.vocabularies} msg={msg}></Box>
-		</div>
-		<div class="col-md-4">
-			<Box each={box in state.boxes[2].boxes} box={box} vocabularies={state.vocabularies} msg={msg}></Box>
-		</div>
-	</div>  
-	
-	<div class="row" style="margin-top: 15px; margin-bottom: 20px;">
-		<div class="col-md-6">
-			<!-- BUTTON "Plugin verlassen" -->
-			<button class="btn" onclick={leavePlugin}>{msg('pluginLeave')}</button>
-			<!-- BUTTON "Digitalisate anzeigen" -->
-			<button class="btn btn-primary pull-right" onclick={showImages}><i class="fa-btn fa fa-image"></i>{msg('plugin_codicological_showImages')}</button>
-		</div>
-		<div class="col-md-6">
-			<!-- BUTTON "Vorschau anzeigen" -->
-			<button class="btn btn-primary" onclick={showPreview}><i class="fa-btn fa fa-desktop"></i>{msg('plugin_codicological_showPreview')}</button>
-			<!-- BUTTONS "Speichern" and "Speichern und verlassen" -->
-			<div class="pull-right">
-				<button class="btn" onclick={save}><i class="fa-btn fa fa-floppy-o"></i>{msg('save')}</button>
-				<button class="btn btn-success" style="margin-left: 15px;" onclick={saveAndExit}><i class="fa-btn fa fa-floppy-o"></i>{msg('plugin_codicological_saveAndExit')}</button>
-			</div>
-		</div>
-	</div>
-	
-	<!-- PREVIEW of the Metadaten -->
-	<Preview if={state.showPreview} values={ state.previewVals } hide={hidePreview} msg={msg} vocabularies={state.vocabularies}/>
-	
+    <div class="flow">
+        <div class="row">
+            <div class="col-md-4">
+                <Box
+                    each={box in state.boxes[0].boxes}
+                    box={box}
+                    vocabularies={state.vocabularies}
+                    msg={msg}></Box>
+            </div>
+            <div class="col-md-4">
+                <Box
+                    each={box in state.boxes[1].boxes}
+                    box={box}
+                    vocabularies={state.vocabularies}
+                    msg={msg}></Box>
+            </div>
+            <div class="col-md-4">
+                <Box
+                    each={box in state.boxes[2].boxes}
+                    box={box}
+                    vocabularies={state.vocabularies}
+                    msg={msg}></Box>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 d-flex justify-content-between">
+                <!-- BUTTON "Plugin verlassen" -->
+                <button
+                    class="btn btn-blank"
+                    onclick={leavePlugin}>
+                    {msg('pluginLeave')}
+                </button>
+                <!-- BUTTON "Digitalisate anzeigen" -->
+                <button
+                    class="btn btn-primary pull-right"
+                    onclick={showImages}>
+                    <span class="fa fa-image" aria-hidden="true" />
+                    <span>{msg('plugin_codicological_showImages')}</span>
+                </button>
+            </div>
+            <div class="col-md-6 d-flex justify-content-between">
+                <!-- BUTTON "Vorschau anzeigen" -->
+                <button
+                    class="btn btn-primary"
+                    onclick={showPreview}>
+                    <span class="fa fa-desktop" aria-hidden="true" />
+                    <span>{msg('plugin_codicological_showPreview')}</span>
+                </button>
+                <!-- BUTTONS "Speichern" and "Speichern und verlassen" -->
+                <div class="d-flex gap-2">
+                    <button
+                        class="btn btn-blank"
+                        onclick={save}>
+                        <span class="fa fa-floppy-o" />
+                        <span>{msg('save')}</span>
+                    </button>
+                    <button
+                        class="btn btn-success"
+                        onclick={saveAndExit}>
+                        <span class="fa fa-floppy-o" />
+                        <span>{msg('plugin_codicological_saveAndExit')}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PREVIEW of the Metadaten -->
+        <Preview
+            if={state.showPreview}
+            values={ state.previewVals }
+            hide={hidePreview}
+            msg={msg}
+            vocabularies={state.vocabularies}/>
+    </div>
+
 	<!-- IMAGE -->
-	<Imagemodal 
-		if={state.showImages} 
-		processId={props.goobi_opts.processId} 
+	<Imagemodal
+		if={state.showImages}
+		processId={props.goobi_opts.processId}
 		images={state.images}
-		imageFolder={state.imageFolder} 
-		hide={hideImages} 
+		imageFolder={state.imageFolder}
+		hide={hideImages}
 		msg={msg}
 	/>
-	
-	<style>
-	 .btn .fa-btn {
-	 	margin-right: 5px;
-	 }
-	</style>
-  
+
   <script>
   import Box from './box.tag';
   import Preview from './preview.tag';
@@ -72,7 +109,7 @@
           imageFolder: "orig",
           images: []
       };
-      
+
       fetch(`/${goobi_path}/api/plugins/flexeditor/process/${props.goobi_opts.processId}/mets`).then(resp => {
 		resp.json().then(json => {
 			this.state.boxes = json;
@@ -83,7 +120,7 @@
 // 			}
 		});
       });
-      
+
       fetch(`/${goobi_path}/api/plugins/flexeditor/process/${props.goobi_opts.processId}/images`).then(resp => {
   		resp.json().then(json => {
   			this.state.images = json.imageNames;
@@ -94,7 +131,7 @@
 //   			}
   		});
       });
-      
+
       fetch(`/${goobi_path}/api/plugins/flexeditor/vocabularies`).then(resp => {
 		resp.json().then(json => {
 			this.state.vocabularies = json;
@@ -106,7 +143,7 @@
 // 			}
 		});
       });
-      
+
       fetch(`/${goobi_path}/api/messages/${props.goobi_opts.language}`, {
           method: 'GET',
           credentials: 'same-origin'
@@ -116,9 +153,9 @@
           this.update();
         });
       });
-      
+
       console.log(props);
-      
+
       fetch(`/${goobi_path}/api/plugins/flexeditor/process/${props.goobi_opts.processId}/ruleset/messages/${props.goobi_opts.language}`, {
           method: 'GET',
           credentials: 'same-origin'
@@ -131,19 +168,19 @@
         });
       });
     },
-    
+
     onMounted(props, state) {
     },
-    
+
     onBeforeUpdate(props, state) {
     },
-    
+
     onUpdated(props, state) {
     },
-    
+
     printState() {
     },
-    
+
     /* triggered when the button `Speichern` is clicked */
     save() {
     	fetch(`/${goobi_path}/api/plugins/flexeditor/process/${this.props.goobi_opts.processId}/mets`, {
@@ -153,7 +190,7 @@
     		alert("There was an error saving your data");
     	})
     },
-    
+
     /* triggered when the button `Speichern und verlassen` is clicked */
     saveAndExit() {
     	fetch(`/${goobi_path}/api/plugins/flexeditor/process/${this.props.goobi_opts.processId}/mets`, {
@@ -165,7 +202,7 @@
     		alert("There was an error saving your data");
     	})
     },
-    
+
     /* used to retrieve values from msg */
     msg(str) {
       if(Object.keys(this.state.msgs).length == 0) {
@@ -176,7 +213,7 @@
       }
       return "???" + str + "???";
     },
-    
+
     /* triggered when the button `Vorschau anzeigen` is clicked */
     showPreview() {
     	this.state.showPreview = true;
@@ -193,25 +230,25 @@
     	this.state.previewVals = previewVals;
     	this.update();
     },
-    
+
     /* used in the preview.tag as hide */
     hidePreview() {
     	this.state.showPreview = false;
     	this.update();
     },
-    
+
     /* triggered when the button `Digitalisate anzeigen` is clicked */
     showImages() {
     	this.state.showImages = true;
     	this.update();
     },
-    
+
     /* used in the imagemodal.tag as hide */
     hideImages() {
     	this.state.showImages = false;
     	this.update();
     },
-    
+
     /* triggered when the button `Plugin verlassen` or `Speichern und verlassen` is clicked */
     leavePlugin() {
     	document.querySelector('#restPluginFinishLink').click();

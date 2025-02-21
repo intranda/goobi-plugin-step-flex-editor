@@ -1,18 +1,18 @@
 <fieldvalue>
 	<!-- VOCABULAR ERROR -->
     <span class="text-danger error" if={state.vocabError}>{state.vocabError}</template>
-    
+
     <!-- Mount the following template when there is no VOCABULAR ERROR -->
     <template if={!state.vocabError && fieldPrepared()}>
     	<!-- INPUT -->
     	<input type="text" class="form-control" onkeyup={changeValue} if={props.field.type == 'INPUT'} value={props.field.values[0].value}></input>
-    	
+
     	<!-- TEXTAREA -->
     	<textarea id="{convertToSlug(props.field.name) + '_textarea'}" class="form-control" onkeyup={changeValue} if={props.field.type == 'TEXTAREA'} rows="1" >{props.field.values[0].value}</textarea>
-    	
+
     	<!-- BOOLEAN -->
-    	<input type="checkbox" onchange={changeValue} checked={checkBoxChecked(props.field.values)} if={props.field.type == 'BOOLEAN'}></input>
-    	
+    	<input type="checkbox" class="form-check-input" onchange={changeValue} checked={checkBoxChecked(props.field.values)} if={props.field.type == 'BOOLEAN'}></input>
+
     	<!-- DROPDOWN -->
     	<div class="select" if={props.field.type == 'DROPDOWN'} onclick={toggleExpandMulti}>
     		<span class="form-control">
@@ -25,8 +25,8 @@
                     <li onclick={ (e) => selectEntry(e, null)}>
                         {props.field.name + ' - auswählen'}
                     </li>
-                    <li 
-                        each={record in state.vocab.records} onclick={ (e) => selectEntry(e, record) } 
+                    <li
+                        each={record in state.vocab.records} onclick={ (e) => selectEntry(e, record) }
                         selected={props.field.values.length != 0 && record.fields[state.vocabFieldIdx].value == props.field.values[0].value}>
                         {record.fields[state.vocabFieldIdx].value}
                     </li>
@@ -34,7 +34,7 @@
             </div>
     	</div>
     	<!-- // DROPDOWN -->
-    	
+
     	<!-- MULTISELECT -->
     	<div class="multiselect" if={props.field.type == 'MULTISELECT'} onclick={toggleExpandMulti}>
     		<span class="form-control">
@@ -42,8 +42,8 @@
     				{props.field.name} - auswählen
     			</span>
     			<span class="multiselect-icon">
-    				<i class="fa fa-caret-down" if={!state.multiExpanded}></i>
-    				<i class="fa fa-caret-up" if={state.multiExpanded}></i>
+    				<span class="fa fa-caret-down" if={!state.multiExpanded} aria-hidden="true" />
+    				<span class="fa fa-caret-up" if={state.multiExpanded} aria-hidden="true" />
     			</span>
     		</span>
     		<div class="multiselect-options" if={state.multiExpanded}>
@@ -60,7 +60,7 @@
     	</div>
     	<!-- // MULTISELECT -->
 	</template>
-	
+
 	<style>
 		.multiselect {
 			cursor: pointer;
@@ -81,7 +81,7 @@
 			border: 1px solid #ccc;
             border-top: none;
 			background-color: #fff;
-			z-index: 1; 
+			z-index: 1;
             max-height: 30vh;
             overflow-y: auto;
 		}
@@ -104,11 +104,11 @@
 		.multiselect .multiselect-values {
 			margin-top: 10px;
 		}
-		
+
 		.multiselect .multiselect-values .badge {
 			margin-right: 5px;
 		}
-        
+
 		.select {
 			position: relative;
 			display: block;
@@ -148,17 +148,17 @@
 		        };
 		        //this.fillField();
 		    },
-		    
+
 		    /* triggered after mounted */
 		    onMounted() {
 		    	this.init(true);
 		    },
-		    
+
 		    /* triggered before update */
 		    onBeforeUpdate() {
 		    	this.init(false);
 		    },
-		    
+
 		    /* triggered whenever a new mounting or an update takes place */
 		    init(update) {
 		    	var field = this.props.field;
@@ -204,13 +204,13 @@
 		        }
 		        this.closeHandler = document.addEventListener('click', (e) => this.closeMulti(e));
 		    },
-		    
+
 		    /* used to check if the field is prepared to load the component */
 		    fieldPrepared() {
 		    	var field = this.props.field;
-		    	return field.values.length > 0 || field.type == "MULTISELECT" || field.type == "DROPDOWN"; 
+		    	return field.values.length > 0 || field.type == "MULTISELECT" || field.type == "DROPDOWN";
 		    },
-		    
+
 		    /* used as callback for closeHandler */
 		    closeMulti(e) {
 		        if(this.state.multiExpanded) {
@@ -219,7 +219,7 @@
 				    this.update();
 		        }
 		    },
-		    
+
 		    /* triggered when a multiselector or a drop down list is clicked */
 		    toggleExpandMulti(e) {
 		      e.stopPropagation();
@@ -236,7 +236,7 @@
 		    	  }
 		      }
 		    },
-		    
+
 		    /* triggered when an item form the multiselector is selected */
 		    toggleEntry(e, record) {
 		        e.stopPropagation();
@@ -251,14 +251,14 @@
 		      	}
 		      	this.update();
 		    },
-		    
+
 		    /* triggered when an item from the drop down list is selected */
 		    selectEntry(e, record) {
 		    	e.stopPropagation();
 		    	var field = this.props.field;
 		    	if(!record) {
 		    		field.values = [];
-		    		
+
 		    	} else {
 			      	var recordValue = record.fields[this.state.vocabFieldIdx].value;
 		      		field.values = [{value: recordValue}];
@@ -266,7 +266,7 @@
 		      	this.state.multiExpanded = false;
 		      	this.update();
 		    },
-		    
+
 		    /* triggered when the value of an input is changed */
 		    changeValue(e) {
 		        var field = this.props.field;
@@ -288,7 +288,7 @@
 		        }
 		        //console.log(field);
 		    },
-		    
+
 		    /* used to set the height of a textarea */
 		    setTextAreaHeight(area, e) {
 		        if(area.offsetHeight < area.scrollHeight) {
@@ -301,18 +301,18 @@
 	                }
                 }
 		    },
-		    
+
 		    /* used to generate ids for textareas */
 		    convertToSlug(text){
 		        return text.toLowerCase()
 		            .replace(/ /g,'-')
 		            .replace(/[^\w-]+/g,'');
 		    },
-		    
+
 		    /* triggered when any check box is clicked */
 		    checkBoxChecked(values) {
-		    	return values.length != 0 
-		    		&& typeof values[0].value == "string" 
+		    	return values.length != 0
+		    		&& typeof values[0].value == "string"
 		    		&& values[0].value.toLowerCase() == "true";
 		    }
 		}

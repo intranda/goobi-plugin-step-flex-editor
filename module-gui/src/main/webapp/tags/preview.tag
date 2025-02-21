@@ -1,17 +1,17 @@
 <preview>
 	<!-- hide is defined in app.tag as hidePreview -->
 	<div class="my-modal-bg" onclick={props.hide}>
-		<div class="box box-color box-bordered" onclick={ e => e.stopPropagation()}>
+		<div class="box box--primary" onclick={ e => e.stopPropagation()}>
 			<!-- BOX TITLE -->
-			<div class="box-title">
+			<div class="box__title">
 				<span>Vorschauansicht</span>
 				<!-- hide is defined in app.tag as hidePreview -->
 				<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
 			</div>
 			<!-- // BOX TITLE -->
-			
+
 			<!-- BOX CONTENT -->
-			<div class="box-content">
+			<div>
 				<table class="table">
 					<tbody>
 						<tr each={ item in state.values}>
@@ -30,7 +30,7 @@
 	                                        <ul each={mdType in Object.keys(value.groupValue.values)}>
 	                                            <li>
 	                                                {props.msg("ruleset_" + mdType)}: {mdToTitle(mdType, value.groupValue.values[mdType], item)}
-	                                            </li> 
+	                                            </li>
 	                                        </ul>
 	                                        <template if={idx != item.values.length-1}>--</template>
 	                                    </template>
@@ -96,19 +96,19 @@
 				this.listenerFunction = this.keyListener.bind(this);
 				document.addEventListener("keyup", this.listenerFunction);
 			},
-			
+
 			/* triggered after mounted */
 			onMounted() {
 				this.state.values = this.props.values;
 				console.log(this.state.values);
 				this.update();
 		    },
-		    
+
 		    /* triggered before unmounting */
 		    onBeforeUnmount() {
 		    	document.removeEventListener("keyup", this.listenerFunction);
 		    },
-		    
+
 		    /* listener function of key */
 		    keyListener(e) {
 		    	if(e.key == "Escape") {
@@ -116,7 +116,7 @@
 		    		this.props.hide();
 		    	}
 		    },
-		    
+
 		    /* used to get the title of a metadata record */
 			mdToTitle(mdType, id, item) {
 				console.log(mdType, id, item.groupMappings);
