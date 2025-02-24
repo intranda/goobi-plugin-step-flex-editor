@@ -1,4 +1,4 @@
-<fieldvalue>
+<fieldvalue class="w-100">
 	<!-- VOCABULAR ERROR -->
     <span class="text-danger error" if={state.vocabError}>{state.vocabError}</template>
 

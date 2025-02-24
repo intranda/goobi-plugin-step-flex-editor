@@ -1,21 +1,21 @@
 <app>
     <div class="flow">
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-12 col-md-6 col-xxl-4">
                 <Box
                     each={box in state.boxes[0].boxes}
                     box={box}
                     vocabularies={state.vocabularies}
                     msg={msg}></Box>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-6 col-xxl-4">
                 <Box
                     each={box in state.boxes[1].boxes}
                     box={box}
                     vocabularies={state.vocabularies}
                     msg={msg}></Box>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-6 col-xxl-4">
                 <Box
                     each={box in state.boxes[2].boxes}
                     box={box}

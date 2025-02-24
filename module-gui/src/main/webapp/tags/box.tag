@@ -1,5 +1,5 @@
 <box>
-	<div class="box box--action section">
+	<div class="box box--action section mb-3">
 		<!-- BOX TITLE -->
 		<div class="box__title">
 			<h3>
@@ -26,25 +26,23 @@
 					each={field in state.filteredFields}
 					onclick={ () => showField(field)}>
 					<span class="fa fa-plus-circle" aria-hidden="true" />
-					{field.name}
+					<span>{field.name}</span>
 				</a>
 			</div>
 
 			<!-- COMPONENT for fields whose types are not MODAL_PROVENANCE -->
-			<div
+			<div class="form-row"
 				each={field in props.box.fields}
 				if={field.show && field.type != "MODAL_PROVENANCE"}>
-				<div class="form-row">
-					<div class="form-label">
-						{field.name}
-					</div>
+				<div class="form-label">
+					{field.name}
 				</div>
 				<div class="form-input">
 					<Fieldvalue field={field} vocabularies={props.vocabularies}></Fieldvalue>
 				</div>
 				<div class="btn btn-blank font-light fs-500">
 					<a onclick={ () => emptyField(field)}>
-						<span class="fa fa-minus-circle" aria-hidden="true" />
+						<span class="fa fa-trash" aria-hidden="true" />
 					</a>
 				</div>
 			</div>
