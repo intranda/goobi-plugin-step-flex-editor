@@ -1,47 +1,14 @@
-package de.intranda.goobi.plugins.flex;
-
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.configuration.SubnodeConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
-import org.apache.commons.lang3.StringUtils;
-import org.goobi.beans.Process;
-import org.goobi.beans.Ruleset;
+package org.goobi.api.rest;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import de.intranda.goobi.plugins.FlexEditor;
-import de.intranda.goobi.plugins.flex.model.Box;
-import de.intranda.goobi.plugins.flex.model.Column;
-import de.intranda.goobi.plugins.flex.model.Field;
-import de.intranda.goobi.plugins.flex.model.FieldValue;
-import de.intranda.goobi.plugins.flex.model.GroupMapping;
-import de.intranda.goobi.plugins.flex.model.GroupValue;
-import de.intranda.goobi.plugins.flex.model.ImagesResponse;
-import de.intranda.goobi.plugins.flex.model.Mapping;
+import de.intranda.goobi.plugins.flex.model.*;
 import de.intranda.goobi.plugins.flex.model.json.vocabulary.JsonVocabulary;
 import de.intranda.goobi.plugins.flex.model.json.vocabulary.JsonVocabularyField;
 import de.intranda.goobi.plugins.flex.model.json.vocabulary.JsonVocabularyRecord;
 import de.intranda.goobi.plugins.flex.model.json.vocabulary.VocabularyBuilder;
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import de.unigoettingen.sub.commons.contentlib.exceptions.IllegalRequestException;
@@ -51,25 +18,37 @@ import io.goobi.vocabulary.exchange.VocabularySchema;
 import io.goobi.workflow.api.vocabulary.VocabularyAPIManager;
 import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabulary;
 import io.goobi.workflow.api.vocabulary.helper.ExtendedVocabularyRecord;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
-import spark.Route;
-import ugh.dl.Corporate;
-import ugh.dl.DigitalDocument;
-import ugh.dl.DocStruct;
-import ugh.dl.Fileformat;
-import ugh.dl.Metadata;
-import ugh.dl.MetadataGroup;
-import ugh.dl.MetadataGroupType;
-import ugh.dl.MetadataType;
-import ugh.dl.Person;
-import ugh.dl.Prefs;
+import org.apache.commons.configuration.SubnodeConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.apache.commons.lang3.StringUtils;
+import org.goobi.beans.Process;
+import org.goobi.beans.Ruleset;
+import ugh.dl.*;
 import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.exceptions.PreferencesException;
 import ugh.exceptions.ReadException;
 import ugh.exceptions.WriteException;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Log4j2
-public class Handlers {
+@Path("/plugins/flexeditor")
+public class FlexEditorApi {
+    // TODO: This is required for config file loading and a code duplication from the base module. The API should not have a requirement on the base module!
+    public static final String TITLE = "intranda_step_flex-editor";
+
     private static Gson gson = new Gson();
     private static Type columnListType = TypeToken.getParameterized(List.class, Column.class).getType();
     private static final String STRING_PROCESS_ID = "processid";
@@ -77,12 +56,11 @@ public class Handlers {
     private static final VocabularyAPIManager vocabularyAPI = VocabularyAPIManager.getInstance();
     private static final VocabularyBuilder vocabularyBuilder = new VocabularyBuilder(vocabularyAPI);
 
-    private Handlers() {
-        // hide the implicit constructor
-    }
-
-    public static final Route allVocabs = (req, res) -> {
-        XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.TITLE);
+    @GET
+    @Path("/vocabularies")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public Map<String, JsonVocabulary> getAllVocabularies() {
+        XMLConfiguration conf = ConfigPlugins.getPluginConfig(TITLE);
         List<Column> colList = readColsFromConfig(conf);
 
         Set<String> vocabNames = new TreeSet<String>();
@@ -117,61 +95,16 @@ public class Handlers {
         });
 
         return vocabMap;
-    };
+    }
 
-    public static final Route getMetsTranslations = (req, res) -> {
-        int processId = Integer.parseInt(req.params(STRING_PROCESS_ID));
-        String language = req.params("language");
-        Map<String, String> translationMap = new HashMap<>();
-
-        Process process = ProcessManager.getProcessById(processId);
-        Prefs prefs = process.getRegelsatz().getPreferences();
-        for (MetadataType mdt : prefs.getAllMetadataTypes()) {
-            if (mdt.getAllLanguages() != null) {
-                translationMap.put(mdt.getName(), mdt.getNameByLanguage(language));
-            }
-        }
-
-        return translationMap;
-    };
-
-    public static final Route getMetadata = (req, res) -> {
-        XMLConfiguration conf = ConfigPlugins.getPluginConfig(FlexEditor.TITLE);
-        List<Column> colList = readColsFromConfig(conf);
-        mergeMetadata(colList, Integer.parseInt(req.params(STRING_PROCESS_ID)));
-        return colList;
-    };
-
-    public static final Route getImages = (req, res) -> {
-        int processId = Integer.parseInt(req.params(STRING_PROCESS_ID));
-        Process p = ProcessManager.getProcessById(processId);
-        Path imDir = Paths.get(p.getImagesTifDirectory(false));
-        if (Files.exists(imDir)) {
-            String[] files = imDir.toFile().list();
-            Arrays.sort(files);
-            return new ImagesResponse("media", files);
-        }
-        imDir = Paths.get(p.getImagesOrigDirectory(false));
-        String[] files = imDir.toFile().list();
-        Arrays.sort(files);
-        return new ImagesResponse("orig", files);
-    };
-
-    public static final Route saveMets = (req, res) -> {
-        List<Column> userInput = gson.fromJson(req.body(), columnListType);
-        int processId = Integer.parseInt(req.params(STRING_PROCESS_ID));
-        Process p = ProcessManager.getProcessById(processId);
-        HttpServletRequest httpRequest = req.raw();
-        saveMetadata(userInput, p, httpRequest);
-        return "";
-    };
-
-    public static final Route newVocabEntry = (req, res) -> {
-        String vocabName = req.params("vocabName");
+    @POST
+    @Path("/vocabularies/{vocabularyname}/records")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public JsonVocabularyRecord createNewVocabularyRecord(@PathParam("vocabularyname") String vocabName, String body) throws IllegalRequestException {
         ExtendedVocabulary vocab = vocabularyAPI.vocabularies().findByName(vocabName);
         VocabularySchema schema = vocabularyAPI.vocabularySchemas().getSchema(vocab);
 
-        JsonVocabularyRecord jsonRecord = gson.fromJson(req.body(), JsonVocabularyRecord.class);
+        JsonVocabularyRecord jsonRecord = gson.fromJson(body, JsonVocabularyRecord.class);
 
         ExtendedVocabularyRecord record = vocabularyAPI.vocabularyRecords().createEmptyRecord(vocab.getId(), null, false);
 
@@ -195,9 +128,63 @@ public class Handlers {
         return vocabularyBuilder.buildRecord(record);
     };
 
+    @GET
+    @Path("/process/{processid}/ruleset/messages/{language}")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public Map<String, String> getMetsTranslations(@PathParam("processid") int processid, @PathParam("language") String language) {
+        Map<String, String> translationMap = new HashMap<>();
+
+        Process process = ProcessManager.getProcessById(processid);
+        Prefs prefs = process.getRegelsatz().getPreferences();
+        for (MetadataType mdt : prefs.getAllMetadataTypes()) {
+            if (mdt.getAllLanguages() != null) {
+                translationMap.put(mdt.getName(), mdt.getNameByLanguage(language));
+            }
+        }
+
+        return translationMap;
+    }
+
+    @GET
+    @Path("/process/{processid}/mets")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public List<Column> getMetadata(@PathParam("processid") int processid) throws ReadException, SwapException, IOException, PreferencesException {
+        XMLConfiguration conf = ConfigPlugins.getPluginConfig(TITLE);
+        List<Column> colList = readColsFromConfig(conf);
+        mergeMetadata(colList, processid);
+        return colList;
+    }
+
+    @POST
+    @Path("/process/{processid}/mets")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public Response saveMets(@PathParam("processid") int processid, String body) throws ReadException, WriteException, SwapException, MetadataTypeNotAllowedException, IOException, PreferencesException {
+        List<Column> userInput = gson.fromJson(body, columnListType);
+        Process p = ProcessManager.getProcessById(processid);
+        saveMetadata(userInput, p);
+        return Response.ok().build();
+    }
+
+    @GET
+    @Path("/process/{processid}/images")
+    @Produces({ MediaType.APPLICATION_JSON })
+    public ImagesResponse getImages(@PathParam("processid") int processid) throws SwapException, IOException, DAOException {
+        Process p = ProcessManager.getProcessById(processid);
+        java.nio.file.Path imDir = Paths.get(p.getImagesTifDirectory(false));
+        if (Files.exists(imDir)) {
+            String[] files = imDir.toFile().list();
+            Arrays.sort(files);
+            return new ImagesResponse("media", files);
+        }
+        imDir = Paths.get(p.getImagesOrigDirectory(false));
+        String[] files = imDir.toFile().list();
+        Arrays.sort(files);
+        return new ImagesResponse("orig", files);
+    }
+
     /**
      * read columns from configuration
-     * 
+     *
      * @param conf
      * @return list of Column objects
      */
@@ -215,10 +202,9 @@ public class Handlers {
 
     /**
      * save the metadata
-     * 
+     *
      * @param userInput input list of column objects from the user
      * @param p Goobi process
-     * @param request HttpServletRequest object
      * @throws ReadException
      * @throws IOException
      * @throws SwapException
@@ -226,7 +212,7 @@ public class Handlers {
      * @throws MetadataTypeNotAllowedException
      * @throws WriteException
      */
-    private static void saveMetadata(List<Column> userInput, Process p, HttpServletRequest request)
+    private static void saveMetadata(List<Column> userInput, Process p)
             throws ReadException, IOException, SwapException, PreferencesException, MetadataTypeNotAllowedException, WriteException {
 
         Ruleset ruleset = p.getRegelsatz();
@@ -242,7 +228,7 @@ public class Handlers {
             for (Box box : col.getBoxes()) {
                 for (Field field : box.getFields()) {
                     if (field.isMultiVocabulary()) {
-                        processMultiVocabularyField(prefs, ds, field, request);
+                        processMultiVocabularyField(prefs, ds, field);
                     } else { // !field.isMultiVocabulary()
                         processSingleVocabularyField(prefs, ds, field);
                     }
@@ -254,20 +240,18 @@ public class Handlers {
 
     /**
      * process Multi-Vocabulary field object for saving
-     * 
+     *
      * @param prefs Prefs
      * @param ds DocStruct
      * @param field Field that should be processed
-     * @param request HttpServletRequest
      * @throws MetadataTypeNotAllowedException
      */
-    private static void processMultiVocabularyField(Prefs prefs, DocStruct ds, Field field, HttpServletRequest request)
+    private static void processMultiVocabularyField(Prefs prefs, DocStruct ds, Field field)
             throws MetadataTypeNotAllowedException {
         Set<String> allGroups = field.getGroupMappings()
                 .stream()
                 .map(GroupMapping::getGroupName)
                 .collect(Collectors.toSet());
-        Map<String, Mapping> metadataTypeToMappingMap = createMetadataTypeToMappingMap(field);
         //delete all groups managed by this field
         for (String groupName : allGroups) {
             MetadataGroupType mdgt = prefs.getMetadataGroupTypeByName(groupName);
@@ -284,7 +268,7 @@ public class Handlers {
                 log.debug("metadataValue = " + metadataValue);
                 String recordId = metadataValue.substring(metadataValue.lastIndexOf("/") + 1);
                 log.debug("recordId = " + recordId);
-                prepareMetadataGivenTypeName(newGroup, metadataTypeName, recordId, metadataTypeToMappingMap, request);
+                prepareMetadataGivenTypeName(newGroup, metadataTypeName, recordId);
             }
             ds.addMetadataGroup(newGroup);
         }
@@ -292,7 +276,7 @@ public class Handlers {
 
     /**
      * process Single-Vocabulary field object for saving
-     * 
+     *
      * @param prefs Prefs
      * @param ds DocStruct
      * @param field Field that should be processed
@@ -333,16 +317,13 @@ public class Handlers {
 
     /**
      * prepare a Metadata object for the input MetadataGroup
-     * 
+     *
      * @param newGroup MetadataGroup that should be added with the prepared Metadata object
      * @param metadataTypeName name of the MetadataType based on which the Metadata object should be prepared
      * @param recordId id of the record that should be retrieved
-     * @param metadataTypeToMappingMap Map from MetadataTypes' names to Mapping objects
-     * @param request HttpServletRequest
      * @throws MetadataTypeNotAllowedException
      */
-    private static void prepareMetadataGivenTypeName(MetadataGroup newGroup, String metadataTypeName, String recordId,
-            Map<String, Mapping> metadataTypeToMappingMap, HttpServletRequest request) throws MetadataTypeNotAllowedException {
+    private static void prepareMetadataGivenTypeName(MetadataGroup newGroup, String metadataTypeName, String recordId) throws MetadataTypeNotAllowedException {
         log.debug("metadataTypeName = " + metadataTypeName);
         // a direct call of newGroup.getMetadataList() will return an empty list, so we have to choose another way:
         // 1. find out the MetadataType whose name is equal to metadataTypeName
@@ -364,7 +345,7 @@ public class Handlers {
 
     /**
      * create a Metadata object given the input metadataTypeName, and add it to the input MetadataGroup newGroup
-     * 
+     *
      * @param newGroup MetadataGroup that should be added with the new Metadata object
      * @param metadataTypeName name of the MetadataType based on which the Metadata object should be created
      * @return the new Metadata object
@@ -398,24 +379,8 @@ public class Handlers {
     }
 
     /**
-     * create a map from MetadataTypes' names to Mapping objects
-     * 
-     * @param field Field object
-     * @return a map from MetadataTypes' names to Mapping objects
-     */
-    private static Map<String, Mapping> createMetadataTypeToMappingMap(Field field) {
-        Map<String, Mapping> metadataTypeToMappingMap = new HashMap<>();
-        for (GroupMapping gm : field.getGroupMappings()) {
-            for (Mapping mapping : gm.getMappings()) {
-                metadataTypeToMappingMap.put(mapping.getMetadataType(), mapping);
-            }
-        }
-        return metadataTypeToMappingMap;
-    }
-
-    /**
      * merge all saved Metadata
-     * 
+     *
      * @param colList list of Column objects
      * @param processId id of the Goobi process
      * @throws ReadException
@@ -452,7 +417,7 @@ public class Handlers {
 
     /**
      * merge multi-vocabulary fields
-     * 
+     *
      * @param ds DocStruct
      * @param field Field
      */
@@ -479,7 +444,7 @@ public class Handlers {
 
     /**
      * merge single vocabulary fields
-     * 
+     *
      * @param prefs Prefs
      * @param ds DocStruct
      * @param field Field
@@ -508,7 +473,7 @@ public class Handlers {
 
     /**
      * perpare the field "values" for the GroupValue object
-     * 
+     *
      * @param mdg MetadataGroup
      * @param gm GroupMapping
      * @return a Map that shall be used as the field "values" of a GroupValue object
@@ -538,5 +503,4 @@ public class Handlers {
 
         return values;
     }
-
 }

@@ -1,17 +1,17 @@
 <provenancemodal>
 <!-- hide is defined in box.tag as hideProvenanceModal -->
 <div class="my-modal-bg" onclick={props.hide}>
-	<div class="box box-color box-bordered" onclick={ e => e.stopPropagation()}>
+	<div class="box box--primary" onclick={ e => e.stopPropagation()}>
 		<!-- BOX TITLE -->
-		<div class="box-title">
+		<div class="box__title">
 			<span>{props.field.name}</span>
 			<!-- hide is defined in box.tag as hideProvenanceModal -->
 			<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
 		</div>
         <!-- // BOX TITLE -->
-        
+
         <!-- BOX CONTENT -->
-        <div class="box-content">
+        <div>
         	<!-- TEMPLATE for group mappings -->
             <template each={group in props.field.groupMappings}>
             	<!-- TEMPLATE for mappings -->
@@ -20,30 +20,30 @@
                     <template if={!mapping.sourceVocabulary}>
                         <div class="form-group">
                           <label for="input{mapping.metadataType}">{msg('ruleset_' + mapping.metadataType)}</label>
-                          <input 
-                            type="input" 
-                            class="form-control" 
-                            id="input{mapping.metadataType}" 
-                            placeholder="{msg('ruleset_' + mapping.metadataType)}" 
+                          <input
+                            type="input"
+                            class="form-control"
+                            id="input{mapping.metadataType}"
+                            placeholder="{msg('ruleset_' + mapping.metadataType)}"
                             value={state.result[mapping.metadataType]}
                             onkeyup={(e) => updateResult(mapping.metadataType, e)}>
                         </div>
                     </template>
-                    
+
                     <!-- Mounted when mapping has a valid sourceVocabulary attribute -->
                     <template if={mapping.sourceVocabulary}>
                     	<!-- Text input to search for existing entry -->
                         <div class="form-group">
                           <label for="search{mapping.sourceVocabulary}">{mapping.sourceVocabulary} durchsuchen</label>
-                          <input 
-                            type="input" 
-                            class="form-control" 
-                            id="search{mapping.sourceVocabulary}" 
-                            placeholder="{mapping.sourceVocabulary} durchsuchen" 
+                          <input
+                            type="input"
+                            class="form-control"
+                            id="search{mapping.sourceVocabulary}"
+                            placeholder="{mapping.sourceVocabulary} durchsuchen"
                             value={state.searchTerms[mapping.sourceVocabulary]}
                             onkeyup={(e) => filterVocabulary(mapping.sourceVocabulary, e)}>
                         </div>
-                        
+
                         <!-- Table of matched results -->
                         <table class="table" if={state.filteredVocabs[mapping.sourceVocabulary] && state.filteredVocabs[mapping.sourceVocabulary].length != 0}>
                             <thead>
@@ -62,19 +62,19 @@
                                 </tr>
                             </tbody>
                         </table>
-                        
+
                         <!-- COMPONENT of `Neu anlegen` -->
-                        <Vocabentryform 
-                            vocabname={mapping.sourceVocabulary} 
+                        <Vocabentryform
+                            vocabname={mapping.sourceVocabulary}
                             vocabularies={props.vocabularies}
-                            entryCreated={entryCreated} 
+                            entryCreated={entryCreated}
                             msg={props.msg}>
                         </Vocabentryform>
                     </template>
-                    
+
                 </template>
                 <!-- // TEMPLATE for mappings -->
-                
+
                 <!-- RESULT TABLE -->
                 <table class="table result-table" if={anyResults()}>
                     <thead>
@@ -95,10 +95,12 @@
                 <!-- // RESULT TABLE -->
             </template>
             <!-- TEMPLATE for group mappings -->
-            
+
+        </div>
+		<div class="section-footer">
             <!-- BUTTON to add new Provenienz -->
             <button class="btn btn-primary pull-right confirm-button" onclick={addEntry}>Provenienz hinzufügen</button>
-        </div>
+		</div>
         <!-- // BOX CONTENT -->
     </div>
 </div>
@@ -151,7 +153,7 @@ export default {
 	components: {
     	Vocabentryform
 	},
-	
+
 	/* triggered before mounting */
 	onBeforeMount(state, props) {
 		this.listenerFunction = this.keyListener.bind(this);
@@ -162,7 +164,7 @@ export default {
 			searchTerms: {},
 		};
 	},
-	
+
 	/* triggered after the component is mounted */
 	onMounted() {
 		let vocabs = this.props.vocabularies;
@@ -175,12 +177,12 @@ export default {
 		};
 		console.log(this.state);
 	},
-	
+
 	/* triggered before unmounting */
 	onBeforeUnmount() {
     	document.removeEventListener("keyup", this.listenerFunction);
     },
-    
+
     /* listener function of the key */
     keyListener(e) {
     	if(e.key == "Escape") {
@@ -188,12 +190,12 @@ export default {
     		this.props.hide();
     	}
     },
-    
+
     /* used to retrieve values from msg */
 	msg(key) {
 		return this.props.msg(key);
 	},
-	
+
 	/* triggered when any text input for `... durchsuchen` gets an input, used to get a filtered vocabulary list according to the input */
 	filterVocabulary(vocabularyName, e) {
 		let term = e.target.value.toLowerCase();
@@ -213,7 +215,7 @@ export default {
 		});
 		this.update();
 	},
-	
+
 	/* triggered when the button in the column `Aktion` for a record is clicked */
 	addValue(mapping, value) {
 		console.log(value);
@@ -222,7 +224,7 @@ export default {
 		this.state.searchTerms[mapping.sourceVocabulary] = "";
 		this.update();
 	},
-	
+
 	/* triggered when the result table is generated, used to formulate pretty vocabular values */
 	getPrettyVocabValue(mapping, value) {
 		if(value == undefined) {
@@ -231,23 +233,23 @@ export default {
 		if(mapping.sourceVocabulary) {
 			let vocabulary = this.state.vocabs[mapping.sourceVocabulary];
 			let record = vocabulary.records.filter(r => r.id == value)[0];
-			return recordTitle(record, vocabulary); 
+			return recordTitle(record, vocabulary);
 		}
 		return value;
 	},
-	
+
 	/* triggered when the text input of a mapping without a valid sourceVocabulary attribute gets an input */
 	updateResult(metadataType, event) {
 		this.state.result[metadataType] = event.target.value;
 		this.update();
 	},
-	
+
 	/* triggered when the button `Provenienz hinzufügen` is clicked */
 	addEntry() {
 		this.props.field.values.push({
 			groupValue: {
 				values: this.state.result,
-				groupName: this.props.field.groupMappings[0].groupName	
+				groupName: this.props.field.groupMappings[0].groupName
 			}
 		});
 		//console.log(this.props.valuesChanged, this.props.hide)
@@ -256,12 +258,12 @@ export default {
 		// hide is defined in box.tag as hideProvenanceModal
 		this.props.hide();
 	},
-	
+
 	/* used to check if the result table should be shown */
 	anyResults() {
 		return Object.values(this.state.result).filter(val => !!val).length > 0;
 	},
-	
+
 	/* used to retrieve values of fields if they exist, otherwise empty string */
 	valueOrEmpty(fields, label) {
 		let field = fields.find(v => v.label == label);
@@ -270,7 +272,7 @@ export default {
 		}
 		return "";
 	},
-	
+
 	/*  */
 	recordMainValue(record, vocabName) {
 		if(vocabName) {
@@ -280,7 +282,7 @@ export default {
 		}
 		return record;
 	},
-	
+
 	/* used in the vocabentryform.tag as entryCreated */
 	entryCreated(entry) {
 		console.log("entry created", entry);

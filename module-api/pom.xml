@@ -5,6 +5,6 @@
     <artifactId>plugin-step-flex-editor</artifactId>
     <version>25.02</version>
   </parent>
-  <artifactId>plugin-step-flex-editor-base</artifactId>
+  <artifactId>plugin-step-flex-editor-api</artifactId>
   <packaging>jar</packaging>
 </project>

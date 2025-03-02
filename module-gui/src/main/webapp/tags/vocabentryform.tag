@@ -2,19 +2,19 @@
 <div class="wrapper">
 	<!-- Mounted if state is not extended -->
 	<span class="vocabentrylink" if={!state.extended} onclick={toggleExtended}>
-		<i class="fa fa-chevron-right icon-left"></i>Neu anlegen
+		<span class="fa fa-chevron-right" aria-hidden="true" />Neu anlegen
 	</span>
-	
+
 	<!-- Mounted if state is extended -->
 	<div class="vocabentryform" if={state.extended}>
 		<!-- The clickable label `Neu anlegen` -->
 	    <span class="form-label vocabentrylink" onclick={toggleExtended}>
-	    	<i class="fa fa-chevron-down icon-left"></i>Neu anlegen
+	    	<span class="fa fa-chevron-down" aria-hidden="true" />Neu anlegen
 	    </span>
-	    
+
 	    <!-- Fields that could be modified -->
 	    <div class="form-group" each={entry in state.struct}>
-	        <label for="{props.vocabname + '_' + entry.label}">{entry.label}</label> 
+	        <label for="{props.vocabname + '_' + entry.label}">{entry.label}</label>
 	        <input
 	            type="input"
 	            class="form-control"
@@ -23,7 +23,7 @@
 	            onkeyup={e => editField(entry.label, e.target.value)}
 	        ></input>
 	    </div>
-	    
+
 	    <!-- BUTTON `Erzeugen` -->
         <div class="bottom-form">
             <button class="btn btn-primary" onclick={saveNewEntry}>Erzeugen</button>
@@ -54,7 +54,7 @@
    .vocabentryform .form-group {
         width: 50%;
    }
-   
+
    .vocabentryform .form-group:nth-child(odd) {
        padding-left: 5px;
    }
@@ -77,19 +77,20 @@
 </style>
 
 <script>
+	const goobi_path = location.pathname.split('/')[1];
 export default {
 	/* triggered before mounting */
     onBeforeMount(state, props) {
     	console.log(this.props);
-    	this.state = this.getInitialState();	
+    	this.state = this.getInitialState();
     },
-    
+
     /* used to get the initial state */
     getInitialState() {
     	let state = {
     		struct: {},
     		fields: []
-    	}; 	
+    	};
     	state.struct = this.props.vocabularies[this.props.vocabname].struct;
     	for(let entry of state.struct) {
     		state.fields.push({
@@ -99,26 +100,26 @@ export default {
     	}
     	return state;
     },
-    
+
     /* triggered after mounted */
     onMounted() {
     	console.log("vocabentry", this.state);
     },
-    
+
     onBeforeUnmount() {
     },
-    
+
     /* used to retrieve the value from msg */
     msg(key) {
         return this.props.msg(key);
     },
-    
+
     /* triggered when the label `Neu anlegen` is clicked */
     toggleExtended() {
     	this.state.extended = !this.state.extended;
     	this.update();
     },
-    
+
     /* triggered when any field in the `Neu anlegen` state is edited */
     editField(fieldLabel, value) {
 		let field = this.state.fields.find(f => f.label === fieldLabel);
@@ -127,12 +128,12 @@ export default {
     	}
     	this.update();
     },
-    
+
     /* triggered when the button `Erzeugen` is clicked */
     saveNewEntry() {
     	console.log("props", this.props);
     	console.log(this.state.struct);
-    	fetch(`/goobi/plugins/ce/vocabularies/${this.props.vocabname}/records`, {
+    	fetch(`/${goobi_path}/api/plugins/flexeditor/vocabularies/${this.props.vocabname}/records`, {
     		method: "POST",
     		body: JSON.stringify({fields: this.state.fields})
     	}).then(resp => {
