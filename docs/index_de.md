@@ -3,6 +3,10 @@ title: Flex Editor
 identifier: intranda_step_flex_editor
 description: Step Plugin für die dynamische Anpassung von Erfassungsmasken für Metadaten
 published: true
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Step Plugin
 ---
 
 ## Einführung
