@@ -43,7 +43,7 @@ Die Konfiguration des Plugins erfolgt in der Datei `plugin_intranda_step_flex-ed
 
 {{CONFIG_DESCRIPTION_PROJECT_STEP}}
 
-Die Konfigurationsdatei beschreibt den Aufbau der in Goobi zu sehenden Nutzeroberfläche. Die Konfiguration besteht aus mehreren `<column>`-Elementen, die in der Oberfläche jeweils eine Spalte ergeben. In den `<column>`-Elementen gibt es wiederum `<box>`-Elemente, die in der Oberfläche mehrere Metadatenfelder zu einer Box gruppieren. In den `<box>`-Elementen wiederum befinden sich `<field>`-Elemente, die ein Metadatenfeld im Vorgang repäsentieren. Die `<field>`-Elemente können verschiedene Typen haben, die ihnen eine bestimmte Funktionalität in der Nutzeroberfläche geben:
+Die Konfigurationsdatei beschreibt den Aufbau der in Goobi zu sehenden Nutzeroberfläche. Die Konfiguration besteht aus mehreren `<column>`-Elementen, die in der Oberfläche jeweils eine Spalte ergeben. In den `<column>`-Elementen gibt es wiederum `<box>`-Elemente, die in der Oberfläche mehrere Metadatenfelder zu einer Box gruppieren. In den `<box>`-Elementen wiederum befinden sich `<field>`-Elemente, die ein Metadatenfeld im Vorgang repräsentieren. Die `<field>`-Elemente können verschiedene Typen haben, die ihnen eine bestimmte Funktionalität in der Nutzeroberfläche geben:
 
 Parameter               | Erläuterung
 ------------------------|------------------------------------
