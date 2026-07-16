@@ -4,7 +4,7 @@
         <div class="action">
         	<!-- BUTTON to delete the provenance entry -->
             <a onclick={deleteProvenance}>
-              <span class="fa fa-minus-circle" aria-hidden="true" />
+              <span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('circle-minus')}" /></svg></span>
             </a>
         </div>
     </div>

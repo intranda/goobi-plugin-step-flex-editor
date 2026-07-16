@@ -17,7 +17,7 @@
 				<div
 					class="input-group"
 					if={props.box.fields.filter( field => !field.show ).length > 7 || state.search.length > 0}>
-					<span class="input-group-text fa fa-search" aria-hidden="true" />
+					<span class="input-group-text icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('search')}" /></svg></span>
 					<input type="text" class="form-control" onkeyup={filter} placeholder="Filter">
 					</input>
 				</div>
@@ -25,7 +25,7 @@
 					class="badge badge-intranda-light"
 					each={field in state.filteredFields}
 					onclick={ () => showField(field)}>
-					<span class="fa fa-plus-circle" aria-hidden="true" />
+					<span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('circle-plus')}" /></svg></span>
 					<span>{field.name}</span>
 				</a>
 			</div>
@@ -42,7 +42,7 @@
 				</div>
 				<div class="btn btn-blank font-light fs-500">
 					<a onclick={ () => emptyField(field)}>
-						<span class="fa fa-trash" aria-hidden="true" />
+						<span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('trash')}" /></svg></span>
 					</a>
 				</div>
 			</div>

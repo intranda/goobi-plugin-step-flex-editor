@@ -6,7 +6,7 @@
 			<div class="box__title">
 				<span>Vorschauansicht</span>
 				<!-- hide is defined in app.tag as hidePreview -->
-				<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
+				<button class="icon-only-button pull-right" onclick={props.hide}><span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('x')}" /></svg></span></button>
 			</div>
 			<!-- // BOX TITLE -->
 

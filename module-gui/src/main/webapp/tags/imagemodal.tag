@@ -7,7 +7,7 @@
 			<div class="box__title">
 				<span>Bildanzeige</span>
 				<!-- hide is defined in app.tag as hideImages -->
-				<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
+				<button class="icon-only-button pull-right" onclick={props.hide}><span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('x')}" /></svg></span></button>
 			</div>
 			<!-- // BOX TITLE -->
 
@@ -22,19 +22,19 @@
 				<!-- BUTTONS to change pages -->
 				<div class="paginator">
 					<button class="btn" onclick={firstPage}>
-						<span class="fa fa-angle-double-left" aria-hidden="true" />
+						<span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('chevrons-left')}" /></svg></span>
 					</button>
 					<button class="btn btn-primary" onclick={prevPage}>
-						<span class="fa fa-angle-left" aria-hidden="true" />
+						<span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('chevron-left')}" /></svg></span>
 						<span>{msg('previousImage')}</span>
 					</button>
 					<span class="current-page">{msg('seite')} {state.currentPageNumber + 1} {msg('von')} {props.images.length}</span>
 					<button class="btn btn-primary" onclick={nextPage}>
 						<span>{msg('nextImage')}</span>
-						<span class="fa fa-angle-right" aria-hidden="true" />
+						<span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('chevron-right')}" /></svg></span>
 					</button>
 					<button class="btn" onclick={lastPage}>
-						<span class="fa fa-angle-double-right" aria-hidden="true" />
+						<span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('chevrons-right')}" /></svg></span>
 					</button>
 				</div>
 				<!-- // BUTTONS -->

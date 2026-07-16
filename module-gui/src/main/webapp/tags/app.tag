@@ -36,7 +36,7 @@
                 <button
                     class="btn btn-primary pull-right"
                     onclick={showImages}>
-                    <span class="fa fa-image" aria-hidden="true" />
+                    <span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('photo')}" /></svg></span>
                     <span>{msg('plugin_codicological_showImages')}</span>
                 </button>
             </div>
@@ -45,7 +45,7 @@
                 <button
                     class="btn btn-primary"
                     onclick={showPreview}>
-                    <span class="fa fa-desktop" aria-hidden="true" />
+                    <span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('device-desktop')}" /></svg></span>
                     <span>{msg('plugin_codicological_showPreview')}</span>
                 </button>
                 <!-- BUTTONS "Speichern" and "Speichern und verlassen" -->
@@ -53,13 +53,13 @@
                     <button
                         class="btn btn-blank"
                         onclick={save}>
-                        <span class="fa fa-floppy-o" />
+                        <span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('device-floppy')}" /></svg></span>
                         <span>{msg('save')}</span>
                     </button>
                     <button
                         class="btn btn-success"
                         onclick={saveAndExit}>
-                        <span class="fa fa-floppy-o" />
+                        <span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('device-floppy')}" /></svg></span>
                         <span>{msg('plugin_codicological_saveAndExit')}</span>
                     </button>
                 </div>

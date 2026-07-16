@@ -6,7 +6,7 @@
 		<div class="box__title">
 			<span>{props.field.name}</span>
 			<!-- hide is defined in box.tag as hideProvenanceModal -->
-			<button class="icon-only-button pull-right" onclick={props.hide}><i class="fa fa-times"></i></button>
+			<button class="icon-only-button pull-right" onclick={props.hide}><span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('x')}" /></svg></span></button>
 		</div>
         <!-- // BOX TITLE -->
 
@@ -58,7 +58,7 @@
                                         {valueOrEmpty(value.fields, field.label)}
                                     </td>
                                     <!-- BUTTON to add this entry -->
-                                    <td><button class="btn btn-primary" onclick={() => addValue(mapping, value)}><i class="fa fa-check"></i></button></td>
+                                    <td><button class="btn btn-primary" onclick={() => addValue(mapping, value)}><span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('check')}" /></svg></span></button></td>
                                 </tr>
                             </tbody>
                         </table>

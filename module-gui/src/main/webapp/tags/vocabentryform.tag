@@ -2,14 +2,14 @@
 <div class="wrapper">
 	<!-- Mounted if state is not extended -->
 	<span class="vocabentrylink" if={!state.extended} onclick={toggleExtended}>
-		<span class="fa fa-chevron-right" aria-hidden="true" />Neu anlegen
+		<span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('chevron-right')}" /></svg></span>Neu anlegen
 	</span>
 
 	<!-- Mounted if state is extended -->
 	<div class="vocabentryform" if={state.extended}>
 		<!-- The clickable label `Neu anlegen` -->
 	    <span class="form-label vocabentrylink" onclick={toggleExtended}>
-	    	<span class="fa fa-chevron-down" aria-hidden="true" />Neu anlegen
+	    	<span class="icon-wrapper" aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('chevron-down')}" /></svg></span>Neu anlegen
 	    </span>
 
 	    <!-- Fields that could be modified -->

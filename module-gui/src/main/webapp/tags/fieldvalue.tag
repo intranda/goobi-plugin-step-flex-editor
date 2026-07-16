@@ -42,8 +42,8 @@
     				{props.field.name} - auswählen
     			</span>
     			<span class="multiselect-icon">
-    				<span class="fa fa-caret-down" if={!state.multiExpanded} aria-hidden="true" />
-    				<span class="fa fa-caret-up" if={state.multiExpanded} aria-hidden="true" />
+    				<span class="icon-wrapper" if={!state.multiExpanded} aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('caret-down')}" /></svg></span>
+    				<span class="icon-wrapper" if={state.multiExpanded} aria-hidden="true"><svg><use href="{GoobiIcons.iconHref('caret-up')}" /></svg></span>
     			</span>
     		</span>
     		<div class="multiselect-options" if={state.multiExpanded}>
